@@ -21,7 +21,8 @@
     "dirs": {
       "certDir": "/wisnuc/certificate",
       "tmpDir": "/wisnuc/tmp",
-      "isoDir": "/wisnuc/iso"
+      "isoDir": "/wisnuc/iso",
+      "bleDir": "/wisnuc/ble"
     },
     "files": {
       "csr": "device.csr",
@@ -31,6 +32,10 @@
     }
   },
   "provision": {
-    "address": "http://localhost:8080"
+    "address": "http://192.168.31.206:8080"
+  },
+  "ble": {
+    "port": "/dev/ttyACM0",
+    "baudRate": 115200
   }
 }

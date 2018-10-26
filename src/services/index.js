@@ -20,14 +20,18 @@ class AppService {
       console.log(e)
     }
     if (fs.existsSync(path.join(Config.storage.roots.p, Config.storage.files.provision))) {
-      
+      this.startServices()
     } else {
-
+      this.startProvision()
     }
   }
 
-  startServices() {
-    this.bled = new Bled()
+  async startServicesAsync () {
+    this.Upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
+    this.net = new Net()
+    await this.net.initAsync()
+    this.bled = new Bled(Config.ble.port)
+    await bled.connectAsync()
   }
 
   startProvision() {
@@ -39,9 +43,19 @@ class AppService {
         this.provision.removeAllListeners()
         this.provision.destroy()
         this,provision = undefined
-        
+        this.startServices()
       })
     })
   }
+  
+  getUpgradeList(cb) {
+    return this.Upgrade.list(cb)
+  }
+
+  burnBLE() {
+
+  }
 
 }
+
+module.exports = AppService
