@@ -1,0 +1,36 @@
+{
+  "iot": {
+    "endpoint": "a3dc7azfqxif0n.iot.cn-north-1.amazonaws.com.cn",
+    "region": "cn-north-1"
+  },
+  "upgrade": {
+    "address": "https://wisnuc-upgrade.s3.cn-north-1.amazonaws.com.cn",
+    "fetch": {
+      "beta": "https://wisnuc-upgrade.s3.cn-north-1.amazonaws.com.cn?list-type=2&prefix=beta/abel/&delimiter=/&max-keys=10000",
+      "release": "https://wisnuc-upgrade.s3.cn-north-1.amazonaws.com.cn?list-type=2&prefix=release/abel/&delimiter=/&max-keys=10000"
+    }
+  },
+  "storage": {
+    "roots": {
+      "p": "/wisnuc",
+      "a": "",
+      "b": "",
+      "winas": "",
+      "tmp": ""
+    },
+    "dirs": {
+      "certDir": "/wisnuc/certificate",
+      "tmpDir": "/wisnuc/tmp",
+      "isoDir": "/wisnuc/iso"
+    },
+    "files": {
+      "csr": "device.csr",
+      "cert": "device.cert",
+      "caCert": "awsCA.pem",
+      "provision": "provisioned"
+    }
+  },
+  "provision": {
+    "address": "http://localhost:8080"
+  }
+}
