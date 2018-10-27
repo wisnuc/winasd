@@ -5,8 +5,8 @@ const path = require('path')
 const fs = require('fs')
 
 const Upgrade = require('./upgrade')
-const Bled = require('./bled')
-const Net = require('./net')
+const Bled = require('./Bled')
+const Net = require('./Net')
 const Provision = require('./provision')
 
 class AppService {
@@ -29,9 +29,13 @@ class AppService {
   async startServicesAsync () {
     this.Upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
     this.net = new Net()
-    await this.net.initAsync()
     this.bled = new Bled(Config.ble.port)
-    await bled.connectAsync()
+    this.bled.on('CMD_SCAN', packet => {
+      
+    })
+    this.bled.on('CMD_CONN', packet => {
+
+    })
   }
 
   startProvision() {
