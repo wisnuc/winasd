@@ -16,7 +16,7 @@ class AppService {
       mkdirp.sync(Config.storage.roots.p)
       child.execSync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
     } catch(e) {
-      console.log(e)
+      console.log(e.message)
     }
     try {
       rimraf.sync(Config.storage.dirs.tmpDir)
