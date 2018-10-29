@@ -78,6 +78,7 @@ class Connecting extends State {
       if (data.toString('hex') === '00cc') {
         debug('BLE is in Bootloader mode, need flash firmware')
         bleMode = 'sbl'
+        this.destroy()
         this.setState('Burning', this.serialPort)
       } else if (data.toString('hex') === '00aa') {
         debug('BLE is in application mode')
