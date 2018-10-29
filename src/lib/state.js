@@ -1,6 +1,6 @@
 const EventEmitter = require('events')
 
-const debug = require('debug')('state')
+const debug = require('debug')('ws:state')
 
 class State {
 

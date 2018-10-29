@@ -4,6 +4,7 @@ const EventEmitter = require('events')
 const BaseState = require('../lib/state')
 const debug = require('debug')('ws:bled')
 const util = require('util')
+const burnBLE = require('../lib/flash')
 
 const COMMAND_CONNECT = 0x55
 const COMMAND_PING = 0x30
@@ -11,6 +12,15 @@ const COMMAND_VERSION = 0x31
 const COMMAND_STATION_ID = 0x32
 const COMMAND_STATION_STATUS = 0x33
 const COMMAND_BINDING_PROGRESS = 0x34
+
+const BLED_COMMANDS = {
+  COMMAND_CONNECT,
+  COMMAND_PING,
+  COMMAND_VERSION,
+  COMMAND_STATION_ID,
+  COMMAND_STATION_STATUS,
+  COMMAND_BINDING_PROGRESS
+}
 
 /* validate response data */
 const validate = (data) => {
@@ -40,7 +50,15 @@ const generateSession = () => {
   return session
 }
 
-class Connecting extends BaseState {
+class State extends BaseState {
+  write (cmd, msg, cb) { process.nextTick(() => cb(new Error('Device Busy'))) }
+  getVersion (cb) { process.nextTick(() => cb(new Error('Device Busy'))) }
+  setStationId (id, cb) { process.nextTick(() => cb(new Error('Device Busy'))) }
+  setStationStatus (status, cb) { process.nextTick(() => cb(new Error('Device Busy'))) }
+  sendMsg (msg, cb) { process.nextTick(() => cb(new Error('Device Busy'))) }
+}
+
+class Connecting extends State {
   enter(port, baudRate) {
     this.serialPort = new SerialPort(port, { baudRate })
     this.serialPort.on('error', error => {
@@ -60,6 +78,7 @@ class Connecting extends BaseState {
       if (data.toString('hex') === '00cc') {
         debug('BLE is in Bootloader mode, need flash firmware')
         bleMode = 'sbl'
+        this.setState('Burning', this.serialPort)
       } else if (data.toString('hex') === '00aa') {
         debug('BLE is in application mode')
         bleMode =  'app'
@@ -95,44 +114,53 @@ class Connecting extends BaseState {
   }
 }
 
-class Connected extends BaseState {
+class Connected extends State {
   enter(serialPort) {
     this.port = serialPort
-    this.session = generateSession()
-    this.pingCount = 0
-    this.writeQuene = []
-    
     this.port.on('error', err => {
       this.setState('Disconnect', err)
     })
+    this.session = generateSession()
+    this.pingCount = 0
+    this.writeQuene = []
+    this.addParser()
+    this.heartbeat()
   }
 
   addParser() {
     this.parser = this.port.pipe(new Readline({ delimiter: '\0\0', encoding: '' }))
+    this.dataArray = []
     this.parser.on('data', (data) => {
       // debug('uart receive raw data', data)
       /* no data */
       if (!data || !data.length) return
       /* data does not starts with 0x00: SPS data */
       if (data[0] !== 0) {
-        this.ctx.emit('SPS_DATA', data)
+        this.dataArray.push(data)
+        if (data.length && data[data.length - 1] === 0x0A) { // data end with \n
+          const pack = Buffer.concat(this.dataArray).toString().trim()
+          console.log('Get pack:', pack)
+          if (pack === 'scan') this.ctx.dispatch('CMD_SCAN', pack)
+          if (pack === 'conn') this.ctx.dispatch('CMD_CONN', pack)
+          this.dataArray.length = 0
+        }
       } else if (data.length === 3 && data[1] === data[2] && [0x20, 0x21, 0x22, 0x23].includes(data[2])) { // BLE status
         switch (data[2]) {
           case 0x20:
             debug('BLE init')
-            this.ctx.emit('BLE_INIT')
+            this.ctx.dispatch('BLE_INIT')
             break
           case 0x21:
             debug('BLE start advertising')
-            this.ctx.emit('BLE_ADVERTISING')
+            this.ctx.dispatch('BLE_ADVERTISING')
             break
           case 0x22:
             debug('BLE connect to client')
-            this.ctx.emit('BLE_CONNECTED_CLIENT')
+            this.ctx.dispatch('BLE_CONNECTED_CLIENT')
             break
           case 0x23:
             debug('BLE disconnected with client')
-            this.ctx.emit('BLE_DISCONNECTED_CLIENT')
+            this.ctx.dispatch('BLE_DISCONNECTED_CLIENT')
             break
           default:
             break
@@ -195,10 +223,6 @@ class Connected extends BaseState {
     })
   }
 
-  async writeAsync (cmd, msg) {
-    return util.promisify(this.write).bind(this)(cmd, msg)
-  }
-
   ping (cb) {
     const buf = Buffer.concat([Buffer.alloc(4), Buffer.from(this.session)])
     buf[0] = 0x00
@@ -222,10 +246,6 @@ class Connected extends BaseState {
     this.write(COMMAND_VERSION, Buffer.from([0x00, 0x04, COMMAND_VERSION, COMMAND_VERSION]), cb)
   }
 
-  async getVersionAsync () {
-    return util.promisify(this.getVersion).bind(this)()
-  }
-
   setStationId (id, cb) {
     if (!Buffer.isBuffer(id)) {
       const e = new Error('Id not Buffer')
@@ -241,10 +261,6 @@ class Connected extends BaseState {
     }
   }
 
-  async setStationIdAsync (id) {
-    return util.promisify(this.setStationId).bind(this)(id)
-  }
-
   /* unint8_t status */
   setStationStatus (status, cb) {
     const buf = Buffer.alloc(5)
@@ -256,26 +272,33 @@ class Connected extends BaseState {
     this.write(COMMAND_STATION_STATUS, buf, cb)
   }
 
-  async setStationStatusAsync (status) {
-    return util.promisify(this.setStationStatus).bind(this)(status)
-  }
-
   sendMsg (msg, cb) {
     this.writebByQuene('SPS_RES', `${JSON.stringify(msg)}\n`, cb)
   }
-
-  async sendMsgAsync (msg) {
-    return util.promisify(this.sendMsg).bind(this)(msg)
-  }
 }
 
-class Burning extends BaseState {
+class Burning extends State {
   enter() {
-
+    burnBLE(this.ctx.port, this.ctx.bin, err => {
+      if (err) {
+        this.setState('BurnFailed', err)
+      } else 
+        this.setState('Connecting', this.ctx.port, this.ctx.baudRate)
+    })
   }
 }
 
-class Disconnect extends BaseState {
+class BurnFailed extends State {
+  enter(err) {
+    this.error = err
+    debug(err)
+    this.timer = setTimeout(() => {
+      this.setState('Burning')
+    }, 5000)
+  }
+}
+
+class Disconnect extends State {
   enter(err) {
     this.error = err
     console.log(err)
@@ -286,15 +309,44 @@ class Disconnect extends BaseState {
 }
 
 class Bled extends EventEmitter {
-  constructor() {
-    new Connecting(this)
+  constructor(port, baudRate, bin) {
+    super()
+    this.port = port
+    this.baudRate = baudRate
+    this.bin = bin
+    this.handers = new Map()
+    new Connecting(this, port, baudRate)
   }
 
+  addHandler(type, callback){
+    if (this.handers.has(type)) {
+      this.handers[type].push(callback)
+    }
+    else {
+      this.handers[type] = [callback]
+    }
+  }
+
+  dispatch(type, data) {
+    if (this.handers.has(type)) {
+      this.handers[type].foreach(cb => cb(data))
+    }
+  }
+
+  write (...args) { this.state.write(...args) }
+  getVersion (...args) { this.state.getVersion(...args) }
+  setStationId (...args) { this.state.setStationId(...args) }
+  setStationStatus (...args) { this.state.setStationStatus(...args) }
+  sendMsg (...args) { this.state.sendMsg(...args) }
 }
 
 Bled.prototype.Connecting = Connecting
 Bled.prototype.Connected = Connected
 Bled.prototype.Disconnect = Disconnect
 Bled.prototype.Burning = Burning
+Bled.prototype.BurnFailed = BurnFailed
+  
+Bled.prototype.BLED_COMMANDS = BLED_COMMANDS
 
+  
 module.exports = Bled

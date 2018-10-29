@@ -9,6 +9,8 @@ const State = require('./state')
 
 const HOUR = 3600 * 1000
 
+const MINUTE = 1000 * 60
+
 class Pending extends State {
 
   enter (err, data) {
@@ -20,7 +22,7 @@ class Pending extends State {
     }
 
     this.startTime = new Date().getTime()
-    this.timeout = err ? 1 * HOUR : 24 * HOUR
+    this.timeout = err ? 1 * MINUTE : 10 * MINUTE
     this.timer = setTimeout(() => this.setState('Working'), this.timeout) 
 
     if (data) this.ctx.emit('update', data)

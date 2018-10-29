@@ -14,11 +14,16 @@ class Upgrade extends event {
 
   constructor (ctx, tmpDir, dir) {
     super()
+    this.ctx = ctx
     this.tmpDir = tmpDir
     this.dir = dir
     this.fetcher = new Fetch(true)
     this.fetcher.on('Pending', this.onFetchData.bind(this))
-    this.currentVersion = '0.0.0' // FIXME:
+    this.currentVersion = '0.0.0'
+    try {
+      this.currentVersion = fs.readFileSync(upgradeConf.version).toString().trim()
+    } catch (e) { console.log(e) }
+    
   }
 
   get downloader() {

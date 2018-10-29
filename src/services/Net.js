@@ -156,7 +156,7 @@ class Initing extends State {
         this.data = nic.name
         this.ctx.device = this.data
         let connected = (nic.state === 'connected')
-        this.setState(connected ? 'Connected': 'Disconnected')
+        this.setState('Inited', connected ? 'Connected': 'Disconnected')
       }
     })
   }
@@ -180,6 +180,18 @@ class Initing extends State {
     } else {
       this.error ? this.callback(this.error) : this.callback(null, this.data)
     }
+  }
+}
+
+class Inited extends State {
+  enter(nextState, data) {
+    this.timer = setTimeout(() => {
+      this.setState(nextState, data)
+    }, 3000)
+  }
+
+  exit() {
+    clearTimeout(this.timer)
   }
 }
 
@@ -209,6 +221,7 @@ class Net extends events {
 }
 
 Net.prototype.Initing = Initing
+Net.prototype.Inited = Inited
 Net.prototype.InitFailed = InitFailed
 Net.prototype.Disconnecting = Disconnecting
 Net.prototype.Disconnected = Disconnected
