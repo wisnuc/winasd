@@ -96,8 +96,8 @@ class Connecting extends State {
   }
 
   exit() {
-    if (!this.child_conn.killed) this.child_conn.kill()
-    if (!this.child_ifconf) this.child_ifconf.kill()
+    if (this.child_conn && !this.child_conn.killed) this.child_conn.kill()
+    if (this.child_ifconf && !this.child_ifconf.killed) this.child_ifconf.kill()
     super.exit()
   }
 }
