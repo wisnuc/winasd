@@ -7,6 +7,7 @@ const rimraf = require('rimraf')
 const Config = require('config')
 const crypto = require('crypto')
 const UUID = require('uuid')
+const debug = require('debug')('ws:downloader')
 
 const State = require('./state')
 

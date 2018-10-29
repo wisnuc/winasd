@@ -79,12 +79,12 @@ class Connecting extends State {
     this.child_conn = exec(`nmcli device wifi connect ${essid} password ${key}`, (error, stdout, stderr) => {
       if (error || stderr) {
         cb(error || stderr)
-        this.setState('Disconnected')
+        this.setState('Disconnected', error || stderr)
       } else {
         this.child_ifconf = exec(`ifconfig ${this.device}`, (err, stdo, stde) => {
           if (err || stde) {
             cb(err || stde)
-            this.setState('Disconnected')
+            this.setState('Disconnected', err || stde)
           } else {
             const ip = stdo.toString().split('addr:')[1].split(' ')[0]
             cb(null, { ip })
