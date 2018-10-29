@@ -12,6 +12,11 @@
     "version": "/etc/version"
   },
   "storage": {
+    "uuids": {
+      "p": "0cbc36fa-3b85-40af-946e-f15dce29d86b",
+      "a": "689b853f-3749-4055-8359-054bd6e806b4",
+      "b": "9bec42be-c362-4de0-9248-b198562ccd40"
+    },
     "roots": {
       "p": "/wisnuc",
       "a": "",

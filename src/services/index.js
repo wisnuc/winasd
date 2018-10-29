@@ -3,6 +3,7 @@ const mkdirp = require('mkdirp')
 const rimraf = require('rimraf')
 const path = require('path')
 const fs = require('fs')
+const child = require('child_process')
 
 const Upgrade = require('./upgrade')
 const Bled = require('./Bled')
@@ -11,6 +12,12 @@ const Provision = require('./provision')
 
 class AppService {
   constructor() {
+    try {
+      mkdirp.sync(Config.storage.roots.p)
+      child.execSync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
+    } catch(e) {
+      throw e
+    }
     try {
       rimraf.sync(Config.storage.dirs.tmpDir)
       mkdirp.sync(Config.storage.dirs.tmpDir)
