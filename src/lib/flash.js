@@ -15,8 +15,8 @@ const COMMAND_SET_CCFG = 0x2D
 const COMMAND_MEMORY_READ = 0x2A
 const ACK_BYTE = [0x00, 0xCC]
 
-function burnBLE (port, binPath, cb) {
-  const PORT = port
+function burnBLE (p, binPath, cb) {
+  const PORT = p
   const INPUT_BIN = binPath
   const port = new SerialPort(PORT, {
     baudRate: 115200
