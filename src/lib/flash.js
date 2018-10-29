@@ -160,14 +160,15 @@ function burnBLE (p, binPath, cb) {
   }
 
   const callback = err =>{
-    this.serialPort.removeAllListeners()
-    this.serialPort.on('error', () => {})
-    this.serialPort.close()
+    this.port.removeAllListeners()
+    this.port.on('error', () => {})
+    this.port.close()
     cb(err)
   }
 
   fireAsync()
-    .then(() => callback(null), e => callback(e))
+    .then(() => callback(null))
+    .catch(e => callback(e))
 }
 
 module.exports = burnBLE
