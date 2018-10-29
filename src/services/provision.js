@@ -56,7 +56,6 @@ const deviceSN = () => UUID.v4()
 
 class Failed extends State {
   enter(err) {
-    super.enter()
     this.err = err
     console.log(err)
     this.timer = setTimeout(() => {
@@ -66,7 +65,6 @@ class Failed extends State {
 
   exit() {
     clearTimeout(this.timer)
-    super.exit()
   }
 }
 
@@ -77,7 +75,6 @@ class Finished extends State {
 class PreBuild extends State {
 
   enter() {
-    super.enter()
     this.createCsr(err => {
       if (err) return this.setState('Failed', err)
       this.setState('Provisioning')
@@ -118,7 +115,6 @@ class PreBuild extends State {
 
 class Provisioning extends State {
   enter() {
-    super.enter()
     // FIXME: 
     let csrPath = this.ctx.useFake ? path.join(certFolder, csrName) : path.join(certFolder, csrName)
     let crtPath = this.ctx.useFake ? path.join(certFolder, crtName) : path.join(certFolder, crtName)
@@ -144,7 +140,6 @@ class Provisioning extends State {
 
   exit() {
     if (this.req) this.req.abort()
-    super.exit()
   }
 }
 
@@ -152,7 +147,6 @@ class Provisioning extends State {
 class ConnectTest extends State {
   
   enter () {
-    super.enter()
     this.ctx.useFake ? this.fakeTest(err => {
       let nextState = err ? 'Failed': 'Finished'
       this.setState(nextState, err)
@@ -187,15 +181,12 @@ class ConnectTest extends State {
   realTest(callback) {
     
   }
-
-  exit () {
-    super.exit()
-  } 
 }
 
 class Provision extends require('events'){
 
   constructor() {
+    super()
     this.useFake = true
     new PreBuild(this)
   }
