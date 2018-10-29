@@ -90,13 +90,13 @@ class Checking extends State {
 //TODO: check hash and write to free partition
 class Working extends State {
   enter(data) {
-    super.enter()
     let tmpPath = path.join(this.ctx.tmpDir, UUID.v4())
     let fHash = data.hash
     let url = upgradeConf.address + '/' + this.ctx.bucketKey.slice(0, -4) + 'zip'
     console.log('download url:', url)
     this.rs = request.get(url)
     this.rs.on('error', err => {
+      this.destroy()
       this.setState('Failed', err)
     })
     this.rs.on('response', res => {
@@ -109,6 +109,7 @@ class Working extends State {
     this.hashT = new HashTransform()
     this.ws = fs.createWriteStream(tmpPath)
     this.ws.on('error', err => {
+      this.destroy()
       this.setState('Failed', err)
     })
     this.ws.on('finish', () => {
@@ -137,8 +138,6 @@ class Working extends State {
   }
 
   exit() {
-    this.destroy()
-    super.exit()
   }
 
   destroy() {
