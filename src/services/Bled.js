@@ -236,7 +236,7 @@ class Connected extends State {
 
   heartbeat () {
     this.pingCount += 1
-    console.log('pingCount', this.pingCount)
+    // console.log('pingCount', this.pingCount)
     this.pingAsync().then(() => setTimeout(() => this.heartbeat(), 1000)).catch(e => e && console.error('heartbeat error', e))
   }
 
