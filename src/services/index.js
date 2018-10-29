@@ -70,7 +70,7 @@ class AppService {
           console.log(err)
           this.provision.removeAllListeners()
           this.provision.destroy()
-          this,provision = undefined
+          this.provision = undefined
         })
       })
     })
