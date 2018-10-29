@@ -153,7 +153,7 @@ function burnBLE (p, binPath, cb) {
   }
   
   const fireAsync = async () => {
-    await cmdConnect()
+    // await cmdConnect()
     await cmdErase()
     await sendBin()
     await cmdReset()
