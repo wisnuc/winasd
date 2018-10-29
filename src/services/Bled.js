@@ -74,7 +74,7 @@ class Connecting extends State {
     }, 1000)
 
     this.serialPort.once('data', (data) => {
-      clearTimeout(timer)
+      clearTimeout(this.timer)
       let bleMode
       if (data.toString('hex') === '00cc') {
         debug('BLE is in Bootloader mode, need flash firmware')
@@ -302,7 +302,7 @@ class BurnFailed extends State {
 class Disconnect extends State {
   enter(err) {
     this.error = err
-    console.log(err)
+    debug('Disconnect:', err.message)
     this.timer = setTimeout(() => {
       this.setState('Connecting', this.ctx.port, this.ctx.baudRate)
     }, 5000)

@@ -64,6 +64,10 @@ class Disconnecting extends State {
 }
 
 class Disconnected extends State {
+  enter(error) {
+    debug(error)
+  }
+
   disconnect(cb) {
     process.nextTick(() => cb(null))
   }
