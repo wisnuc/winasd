@@ -213,7 +213,7 @@ class Connected extends State {
   write (cmd, msg, cb) {
     // console.log('write', cmd, msg)
     const timer = setTimeout(() => {
-      this.removeAllListeners(cmd)
+      this.ctx.removeAllListeners(cmd)
       const e = new Error('ETIMEOUT')
       cb(e)
     }, 1000)

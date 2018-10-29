@@ -64,6 +64,7 @@ class Metadata extends State {
 
 class Checking extends State {
   enter(data) {
+    debug(data)
     super.enter()
     mkdirp.sync(this.ctx.tmpDir)
     mkdirp.sync(this.ctx.dstDir)
