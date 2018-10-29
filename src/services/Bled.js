@@ -120,6 +120,9 @@ class Connected extends State {
     this.port.on('error', err => {
       this.setState('Disconnect', err)
     })
+    this.port.on('close', err => {
+      this.setState('Disconnect', err)
+    })
     this.session = generateSession()
     this.pingCount = 0
     this.writeQuene = []
