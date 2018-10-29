@@ -44,7 +44,7 @@ class State extends BaseState{
 
 class Disconnecting extends State {
   enter(cb) {
-    this.child_disconn = exec(`nmcli device disconnect ${this.device}`, (error, stdout, stderr) => {
+    this.child_disconn = exec(`nmcli device disconnect ${this.ctx.device}`, (error, stdout, stderr) => {
       if (error || stderr) cb(error || stderr)
       else {
         cb(null)
@@ -81,7 +81,7 @@ class Connecting extends State {
         cb(error || stderr)
         this.setState('Disconnected', error || stderr)
       } else {
-        this.child_ifconf = exec(`ifconfig ${this.device}`, (err, stdo, stde) => {
+        this.child_ifconf = exec(`ifconfig ${this.ctx.device}`, (err, stdo, stde) => {
           if (err || stde) {
             cb(err || stde)
             this.setState('Disconnected', err || stde)
