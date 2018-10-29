@@ -60,6 +60,7 @@ class State extends BaseState {
 
 class Connecting extends State {
   enter(port, baudRate) {
+    console.log(port, baudRate)
     this.serialPort = new SerialPort(port, { baudRate })
     this.serialPort.on('error', error => {
       this.destroy()
@@ -315,7 +316,7 @@ class Bled extends EventEmitter {
     this.baudRate = baudRate
     this.bin = bin
     this.handers = new Map()
-    new Connecting(this, port, baudRate)
+    new Connecting(this, this.port, this.baudRate)
   }
 
   addHandler(type, callback){

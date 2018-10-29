@@ -16,7 +16,7 @@ class AppService {
       mkdirp.sync(Config.storage.roots.p)
       child.execSync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
     } catch(e) {
-      throw e
+      console.log(e)
     }
     try {
       rimraf.sync(Config.storage.dirs.tmpDir)
@@ -37,8 +37,9 @@ class AppService {
   }
 
   startServices () {
+    console.log('run in normal state')
     this.net = new Net()
-    this.bled = new Bled(Config.ble.port)
+    this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
     this.bled.addHandler('CMD_SCAN', packet => {
       console.log(packet)
       this.net.scan((err, list) => {
@@ -54,6 +55,7 @@ class AppService {
   }
 
   startProvision() {
+    console.log('run in provision state')
     this.net = new Net()
     this.net.on('Inited', () => {
       this.net.connect('Xiaomi_123', 'wisnuc123456', err => {
@@ -74,7 +76,7 @@ class AppService {
       })
     })
 
-    this.bled = new Bled(Config.ble.port, Config.ble.baudRate)
+    this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
     this.bled.addHandler('CMD_SCAN', packet => {
       console.log(packet)
       this.net.scan((err, list) => {
