@@ -66,12 +66,11 @@ class AppService {
       this.provision = new Provision()
       this.provision.on('Finished', () => {
         let p = path.join(Config.storage.roots.p, Config.storage.files.provision)
-        fs.write(p, '1', err => {
+        fs.writeFile(p, '1', err => {
           console.log(err)
           this.provision.removeAllListeners()
           this.provision.destroy()
           this,provision = undefined
-          this.startServices()
         })
       })
     })
