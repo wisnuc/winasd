@@ -93,7 +93,7 @@ class Connecting extends State {
 
     this.serialPort.write(Buffer.from([COMMAND_CONNECT, COMMAND_CONNECT]), err => {
       if (err) {
-        clearTimeout(this.timer)
+        this.destroy()
         this.setState('Disconnect', err)
       }
     })
@@ -134,6 +134,7 @@ class Connected extends State {
     this.parser.on('data', (data) => {
       // debug('uart receive raw data', data)
       /* no data */
+      console.log(data)
       if (!data || !data.length) return
       /* data does not starts with 0x00: SPS data */
       if (data[0] !== 0) {
@@ -194,34 +195,32 @@ class Connected extends State {
 
   schedule () {
     // console.log('schedule', this.writeQuene.length, this.state)
-    if (!this.writeQuene.length || this.state !== 'Idle') return
-    const { cmd, msg, cb } = this.writeQuene.shift()
-    this.ctx.once(cmd, (data) => {
-      // console.log('once', cmd, data)
-      cb(null, data.slice(4, data.length))
-      this.schedule()
-    })
-    this.port.write(msg)
-  }
-
-  writebByQuene (cmd, msg, cb) {
-    this.writeQuene.push({ cmd, msg, cb })
-    this.schedule()
-  }
-
-  /* send cmd to BLE */
-  write (cmd, msg, cb) {
-    // console.log('write', cmd, msg)
+    if (this.scheduleing) return
+    if (!this.writeQuene.length ) return
+    this.scheduleing = true
+    const { cmd, msg, cb } = this.writeQuene.shift()    
     const timer = setTimeout(() => {
       this.ctx.removeAllListeners(cmd)
       const e = new Error('ETIMEOUT')
       cb(e)
+      this.scheduleing = false
+      this.schedule()
     }, 1000)
 
-    this.writebByQuene(cmd, msg, (err, res) => {
+    this.ctx.once(cmd, (data) => {
       clearTimeout(timer)
-      cb(err, res)
+      cb(null, data.slice(4, data.length))
+      this.scheduleing = false
+      this.schedule()
     })
+    
+    this.port.write(msg)
+  }
+
+  /* send cmd to BLE */
+  write (cmd, msg, cb) {
+    this.writeQuene.push({ cmd, msg, cb })
+    this.schedule()
   }
 
   ping (cb) {
@@ -274,7 +273,7 @@ class Connected extends State {
   }
 
   sendMsg (msg, cb) {
-    this.writebByQuene('SPS_RES', `${JSON.stringify(msg)}\n`, cb)
+    this.write('SPS_RES', `${JSON.stringify(msg)}\n`, cb)
   }
 }
 
