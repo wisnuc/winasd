@@ -153,16 +153,16 @@ function burnBLE (p, binPath, cb) {
   }
   
   const fireAsync = async () => {
-    // await cmdConnect()
+    await cmdConnect()
     await cmdErase()
     await sendBin()
     await cmdReset()
   }
 
   const callback = err =>{
-    this.port.removeAllListeners()
-    this.port.on('error', () => {})
-    this.port.close()
+    port.removeAllListeners()
+    port.on('error', () => {})
+    port.close()
     cb(err)
   }
 
