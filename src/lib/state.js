@@ -19,9 +19,9 @@ class State {
     new NextState(this.ctx, ...args)
   }
 
-  _enter () {
+  _enter (...args) {
     debug(`${this.ctx.constructor.name} enter ${this.constructor.name} state`)
-    this.enter()
+    this.enter(...args)
   }
 
   enter () {
