@@ -134,7 +134,7 @@ class Connected extends State {
     this.parser.on('data', (data) => {
       // debug('uart receive raw data', data)
       /* no data */
-      console.log(data)
+      debug(data)
       if (!data || !data.length) return
       /* data does not starts with 0x00: SPS data */
       if (data[0] !== 0) {
