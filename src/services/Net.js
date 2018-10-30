@@ -111,7 +111,7 @@ class Connected extends State {
 class InitFailed extends State {
   enter(error) {
     this.error = error
-    global.useDebug ? debug(error) : console.log('NET INIT ERROR:', InitFailed)
+    global.useDebug ? debug(error) : console.log('NET INIT ERROR:', error)
     this.timer = setTimeout(() => this.setState('Initing', () => {}), 5000)
   }
 

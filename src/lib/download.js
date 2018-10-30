@@ -95,7 +95,7 @@ class Working extends State {
     let tmpPath = path.join(this.ctx.tmpDir, UUID.v4())
     let fHash = data.hash
     let url = upgradeConf.address + '/' + this.ctx.bucketKey.slice(0, -4) + 'zip'
-    console.log('download url:', url)
+    debug('download url:', url)
     this.rs = request.get(url)
     this.rs.on('error', err => {
       this.destroy()

@@ -41,7 +41,7 @@ class AppService {
     this.net = new Net()
     this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
     this.bled.addHandler('CMD_SCAN', packet => {
-      console.log(packet)
+      console.log('CMD_SCAN', packet)
       this.net.scan((err, list) => {
         this.bled.sendMsg(err || list, e => e && console.error('send message via SPS error', e))
       })
@@ -67,7 +67,7 @@ class AppService {
       this.provision.on('Finished', () => {
         let p = path.join(Config.storage.roots.p, Config.storage.files.provision)
         fs.writeFile(p, '1', err => {
-          console.log(err)
+          if (err) console.log('Provision File Write Failed: ', err)
           this.provision.removeAllListeners()
           this.provision.destroy()
           this.provision = undefined
@@ -77,13 +77,13 @@ class AppService {
 
     this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
     this.bled.addHandler('CMD_SCAN', packet => {
-      console.log(packet)
+      // console.log(packet)
       this.net.scan((err, list) => {
         this.bled.sendMsg(err || list, e => e && console.error('send message via SPS error', e))
       })
     })
     this.bled.addHandler('CMD_CONN', packet => {
-      console.log('CMD_CONN', packet)
+      // console.log('CMD_CONN', packet)
       net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
         this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
       })

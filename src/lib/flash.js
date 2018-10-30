@@ -125,9 +125,9 @@ function burnBLE (serialport, binPath, cb) {
     buf[0] = size + 3
     buf[2] = COMMAND_SEND_DATA
     buf[1] = checksum(buf.slice(2, size + 3))
-    process.stdout.clearLine()
-    process.stdout.cursorTo(0)
-    process.stdout.write(`Write ${size} bytes at ${addr}`)
+    // process.stdout.clearLine()
+    // process.stdout.cursorTo(0)
+    // process.stdout.write(`Write ${size} bytes at ${addr}`)
     await writeAsync(buf)
   }
   
@@ -136,7 +136,7 @@ function burnBLE (serialport, binPath, cb) {
     const packageSize = 248
     const bin = await fs.readFileAsync(INPUT_BIN)
     const total = bin.length
-    console.log(`Writing ${total} bytes starting at address 0x00000000`)
+    //console.log(`Writing ${total} bytes starting at address 0x00000000`)
     for (let i = 0; i < total; i += packageSize) {
       const size = Math.min(packageSize, total - i)
       await cmdDownload(i, size)
