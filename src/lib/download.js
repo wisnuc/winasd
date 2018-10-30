@@ -11,6 +11,8 @@ const debug = require('debug')('ws:downloader')
 
 const State = require('./state')
 
+const HOUR = 1 * 1000 * 60 * 60
+
 const upgradeConf = Config.get('upgrade')
 
 class HashTransform extends require('stream').Transform {
@@ -158,6 +160,7 @@ class Failed extends State {
     super.enter()
     console.log(err)
     this.error = err
+    setTimeout(() => this.setState('Metadata'), 1 * HOUR)
   }
 }
 
