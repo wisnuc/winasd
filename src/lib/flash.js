@@ -15,13 +15,9 @@ const COMMAND_SET_CCFG = 0x2D
 const COMMAND_MEMORY_READ = 0x2A
 const ACK_BYTE = [0x00, 0xCC]
 
-function burnBLE (p, binPath, cb) {
-  const PORT = p
+function burnBLE (serialport, binPath, cb) {
   const INPUT_BIN = binPath
-  const port = new SerialPort(PORT, {
-    baudRate: 115200
-  })
-
+  const port = binPath
   const sendAck = (cb) => {
     port.write(Buffer.from(ACK_BYTE), cb)
   }
@@ -153,23 +149,13 @@ function burnBLE (p, binPath, cb) {
   }
   
   const fireAsync = async () => {
-    await cmdConnect()
     await cmdErase()
     await sendBin()
     await cmdReset()
   }
 
-  const callback = err => {
-    console.log(port)
-    port.removeAllListeners()
-    port.on('error', () => {})
-    port.close()
-    cb(err)
-  }
-
   fireAsync()
-    .then(callback)
-    .catch(callback)
+    .then(() => cb(null), cb)
 }
 
 module.exports = burnBLE

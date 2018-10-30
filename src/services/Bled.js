@@ -78,7 +78,6 @@ class Connecting extends State {
       if (data.toString('hex') === '00cc') {
         debug('BLE is in Bootloader mode, need flash firmware')
         bleMode = 'sbl'
-        this.destroy()
         this.setState('Burning', this.serialPort)
       } else if (data.toString('hex') === '00aa') {
         debug('BLE is in application mode')
@@ -280,13 +279,23 @@ class Connected extends State {
 }
 
 class Burning extends State {
-  enter() {
-    burnBLE(this.ctx.port, this.ctx.bin, err => {
+  enter(port) {
+    this.serialPort = port
+
+    burnBLE(this.serialPort, this.ctx.bin, err => {
       if (err) {
         this.setState('BurnFailed', err)
       } else 
         this.setState('Connecting', this.ctx.port, this.ctx.baudRate)
     })
+  }
+
+  exit () {
+    if (this.serialPort) {
+      this.serialPort.removeAllListeners()
+      this.serialPort.on('error', () => {})
+      this.serialPort.close()
+    }
   }
 }
 
