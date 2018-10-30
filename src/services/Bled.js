@@ -281,7 +281,6 @@ class Connected extends State {
 class Burning extends State {
   enter(port) {
     this.serialPort = port
-
     burnBLE(this.serialPort, this.ctx.bin, err => {
       if (err) {
         this.setState('BurnFailed', err)

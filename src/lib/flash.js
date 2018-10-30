@@ -17,7 +17,7 @@ const ACK_BYTE = [0x00, 0xCC]
 
 function burnBLE (serialport, binPath, cb) {
   const INPUT_BIN = binPath
-  const port = binPath
+  const port = serialport
   const sendAck = (cb) => {
     port.write(Buffer.from(ACK_BYTE), cb)
   }
