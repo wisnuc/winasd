@@ -159,26 +159,17 @@ function burnBLE (p, binPath, cb) {
     await cmdReset()
   }
 
-  // const callback = err => {
-  //   port.removeAllListeners()
-  //   port.on('error', () => {})
-  //   port.close()
-  //   cb(err)
-  // }
+  const callback = err => {
+    console.log(port)
+    port.removeAllListeners()
+    port.on('error', () => {})
+    port.close()
+    cb(err)
+  }
 
   fireAsync()
-    .then(() => {
-      port.removeAllListeners()
-      port.on('error', () => {})
-      port.close()
-      cb(null)
-    })
-    .catch(e => {
-      port.removeAllListeners()
-      port.on('error', () => {})
-      port.close()
-      cb(e)
-    })
+    .then(callback)
+    .catch(callback)
 }
 
 module.exports = burnBLE
