@@ -103,13 +103,15 @@ class Connecting extends State {
 }
 
 class Connected extends State {
-
+  enter() {
+    global.useDebug ? '' : console.log('Net Connected')
+  }
 }
 
 class InitFailed extends State {
   enter(error) {
     this.error = error
-    debug(error)
+    global.useDebug ? debug(error) : console.log('NET INIT ERROR:', InitFailed)
     this.timer = setTimeout(() => this.setState('Initing', () => {}), 5000)
   }
 

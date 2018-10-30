@@ -94,6 +94,13 @@ class AppService {
     return this.Upgrade.list(cb)
   }
 
+  view() {
+    return {
+      net: this.net.view(),
+      ble: this.ble.view(),
+      upgrade: this.upgrade.view()
+    }
+  }
 }
 
 module.exports = AppService

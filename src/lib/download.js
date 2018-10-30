@@ -43,7 +43,7 @@ class Metadata extends State {
   enter() {
     super.enter()
     const url = upgradeConf.address + '/' + this.ctx.bucketKey
-    console.log(url)
+    debug(url)
     this.req = request.get(url)
     this.req
       .then(res => {
@@ -158,7 +158,7 @@ class Working extends State {
 class Failed extends State {
   enter(err) {
     super.enter()
-    console.log(err)
+    debug(err)
     this.error = err
     setTimeout(() => this.setState('Metadata'), 1 * HOUR)
   }
@@ -193,6 +193,13 @@ class Download extends EventEmitter {
 
   destroy() {
     this.state.destroy()
+  }
+
+  view() {
+    return {
+      version: this.version,
+      state: this.status
+    }
   }
 }
 

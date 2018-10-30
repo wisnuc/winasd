@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "DEBUG='state*' NODE_PATH=. NODE_ENV=develop mocha"
+    "test": "DEBUG='state*' NODE_PATH=. NODE_ENV=develop mocha",
+    "dev": "DEBUG='ws*' NODE_ENV=develop node src/app.js"
   },
   "author": "",
   "license": "ISC",

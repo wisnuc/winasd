@@ -116,6 +116,7 @@ class Connecting extends State {
 
 class Connected extends State {
   enter(serialPort) {
+    global.useDebug ? '' : console.log('BLE CONNECTED')
     this.port = serialPort
     this.port.on('error', err => {
       this.setState('Disconnect', err)
@@ -142,7 +143,7 @@ class Connected extends State {
         this.dataArray.push(data)
         if (data.length && data[data.length - 1] === 0x0A) { // data end with \n
           const pack = Buffer.concat(this.dataArray).toString().trim()
-          console.log('Get pack:', pack)
+          //console.log('Get pack:', pack)
           if (pack === 'scan') this.ctx.dispatch('CMD_SCAN', pack)
           if (pack === 'conn') this.ctx.dispatch('CMD_CONN', pack)
           this.dataArray.length = 0
@@ -285,6 +286,7 @@ class Burning extends State {
       if (err) {
         this.setState('BurnFailed', err)
       } else 
+        this.useDebug ? '' : console.log('BLE Burn Success')
         this.setState('Connecting', this.ctx.port, this.ctx.baudRate)
     })
   }
@@ -301,6 +303,7 @@ class Burning extends State {
 class BurnFailed extends State {
   enter(err) {
     this.error = err
+    global.useDebug ? '' : console.log('BLE BurnFailed: ', err)
     debug(err)
     this.timer = setTimeout(() => {
       this.setState('Burning')
@@ -311,7 +314,7 @@ class BurnFailed extends State {
 class Disconnect extends State {
   enter(err) {
     this.error = err
-    debug('Disconnect:', err.message)
+    global.useDebug ? debug('Disconnect:', err.message) : console.log('BLE Disconnect: ', err.message)
     this.timer = setTimeout(() => {
       this.setState('Connecting', this.ctx.port, this.ctx.baudRate)
     }, 5000)
@@ -340,6 +343,12 @@ class Bled extends EventEmitter {
   dispatch(type, data) {
     if (this.handers.has(type)) {
       this.handers[type].foreach(cb => cb(data))
+    }
+  }
+
+  view() {
+    return {
+      state: this.state.constructor.name
     }
   }
 

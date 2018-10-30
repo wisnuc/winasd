@@ -57,7 +57,7 @@ const deviceSN = () => UUID.v4()
 class Failed extends State {
   enter(err) {
     this.err = err
-    console.log(err)
+    console.log('PROVISION FAILED:', err)
     this.timer = setTimeout(() => {
       this.setState('PreBuild')
     }, 5000)
@@ -69,7 +69,9 @@ class Failed extends State {
 }
 
 class Finished extends State {
-
+  enter() {
+    global.useDebug ? '' : console.log('PROVISION FINISHED')
+  }
 }
 
 class PreBuild extends State {

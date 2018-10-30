@@ -1,6 +1,6 @@
 const Promise = require('bluebird')
 const fs = Promise.promisifyAll(require('fs'))
-const SerialPort = require('serialport')
+const debug = require('debug')('ws:flash')
 
 /* Serial Bus Commands from swcu117h.pdf */
 const COMMAND_CONNECT = 0x55
@@ -28,7 +28,7 @@ function burnBLE (serialport, binPath, cb) {
   const write = (msg, cb) => {
     const timer = setTimeout(() => {
       port.removeAllListeners('data')
-      console.log('timeout write', msg)
+      debug('timeout write', msg)
       const e = new Error('ETIMEOUT')
       cb(e)
     }, 2000)
@@ -38,11 +38,11 @@ function burnBLE (serialport, binPath, cb) {
       if (data.toString('hex') === Buffer.from(ACK_BYTE).toString('hex')) {
         // console.log('receive ack byte')
       } else if (data[data.length - 1] === 0x44) {
-        console.log('COMMAND_RET_FLASH_FAIL')
+        debug('COMMAND_RET_FLASH_FAIL')
       } else if (data[data.length - 1] === 0x40) {
         // console.log('COMMAND_RET_SUCCESS')
       } else {
-        console.log('not ack byte: ', data)
+        debug('not ack byte: ', data)
         const e = new Error('ENOTACK')
         cb(e)
         return
@@ -52,10 +52,8 @@ function burnBLE (serialport, binPath, cb) {
   
     port.write(msg, (err) => {
       if (err) {
-        console.log('Error on write: ', err.message)
+        debug('Error on write: ', err.message)
         cb(err)
-      } else {
-        // console.log('message written: ', msg)
       }
     })
   }
