@@ -46,5 +46,8 @@
     "port": "/dev/ttyACM0",
     "baudRate": 115200,
     "bin": "/ble.bin"
+  },
+  "system": {
+    "globalNode": true
   }
 }

@@ -9,9 +9,11 @@ const Upgrade = require('./upgrade')
 const Bled = require('./Bled')
 const Net = require('./Net')
 const Provision = require('./provision')
+const Winas = require('./winas')
 
 class AppService {
   constructor() {
+    this.config = Config
     try {
       mkdirp.sync(Config.storage.roots.p)
       child.execSync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
@@ -36,6 +38,32 @@ class AppService {
     }
   }
 
+  get winas() {
+    return this._winas
+  }
+
+  set winas(x) {
+    if(this._winas) {
+      this._winas.removeAllListeners()
+      this._winas.destroy()
+    }
+    this._winas = x
+    this._winas.on('Started', this.handleWinasStarted.bind(this))
+    this._winas.on('message', this.handleWinasMessage.bind(this))
+  }
+
+  handleWinasStarted() {}
+
+  handleWinasMessage(message) {}
+
+  isBeta() {
+    return true
+  }
+
+  nodePath () {
+    return this.config.system.globalNode ? 'node' : '/mnt/winas/node/bin/node'
+  }
+
   startServices () {
     console.log('run in normal state')
     this.net = new Net()
@@ -52,6 +80,25 @@ class AppService {
         this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
       })
     })
+    this.winas = new Winas(this)
+  }
+
+  appStart (callback) {
+    if (!this.winas) return process.nextTick(() => callback(EApp404))
+    if (this.operation) return process.nextTick(() => callback(ERace))
+    this.operation = 'appStart'
+    this.winas.startAsync()
+      .then(() => (this.operation = null, callback(null)))  
+      .catch(e => (this.operation = null, callback(e)))
+  }
+
+  appStop (callback) {
+    if (!this.winas) return process.nextTick(() => callback(EApp404))
+    if (this.operation) return process.nextTick(() => callback(ERace))
+    this.operation = 'appStop'
+    this.winas.stopAsync()
+      .then(() => (this.operation = null, callback(null)))  
+      .catch(e => (this.operation = null, callback(e)))
   }
 
   startProvision() {
@@ -89,7 +136,7 @@ class AppService {
       })
     })
   }
-  
+
   getUpgradeList(cb) {
     return this.Upgrade.list(cb)
   }
@@ -98,8 +145,14 @@ class AppService {
     return {
       net: this.net.view(),
       ble: this.ble.view(),
-      upgrade: this.upgrade.view()
+      upgrade: this.upgrade.view(),
+      operation: this.operation,
+      winas: this.winas ? this.winas.view() : null,
     }
+  }
+
+  destroy() {
+    if (this.winas) this.winas.destroy()
   }
 }
 

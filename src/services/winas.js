@@ -7,7 +7,7 @@ const EventEmitter = require('events')
 const rimraf = require('rimraf')
 const mkdirp = require('mkdirp')
 
-const debug = require('debug')('ws:appifi')
+const debug = require('debug')('ws:winas')
 
 /**
 nexe does not work properly for unknown reason.
@@ -36,11 +36,11 @@ class State {
   }
 
   destroy () {
-    if (this.appifi) {
-      this.appifi.removeAllListeners()
-      this.appifi.on('error', () => {})
-      this.appifi.kill()
-      this.appifi = null
+    if (this.winas) {
+      this.winas.removeAllListeners()
+      this.winas.on('error', () => {})
+      this.winas.kill()
+      this.winas = null
     }
 
     this.exit()
@@ -68,32 +68,32 @@ class Starting extends State {
     super.enter()
 
     const opts = {
-      cwd: this.ctx.appifiDir,
+      cwd: this.ctx.winasDir,
 
       /**
       node must be in path, for there is no global node in future
       */
       env: Object.assign({}, process.env, { 
-        PATH: `/phi/node/base/bin:${process.env.PATH}`,
+        PATH: `/wisnuc/node/base/bin:${process.env.PATH}`,
         NODE_ENV: 'production' 
       }),
       stdio: ['ignore', 'inherit', 'inherit', 'ipc'] 
     }
-    let appPath = path.join(this.ctx.appifiDir, 'build', 'app.js')
+    let appPath = path.join(this.ctx.winasDir, 'build', 'app.js')
     let args = [appPath, ...process.argv.slice(2)]
 
-    this.appifi = child.spawn(this.ctx.nodePath(), args, opts)
-    this.appifi.on('error', err => console.log('Appifi Error in Starting: neglected', err))
-    this.appifi.on('message', message => (this.ctx.emit('message', message), this.setState('Started', this.appifi)))
-    this.appifi.on('close', (code, signal) => (this.appifi = null, this.setState('Failed', { code, signal })))
+    this.winas = child.spawn(this.ctx.nodePath(), args, opts)
+    this.winas.on('error', err => console.log('Winas Error in Starting: neglected', err))
+    this.winas.on('message', message => (this.ctx.emit('message', message), this.setState('Started', this.winas)))
+    this.winas.on('close', (code, signal) => (this.winas = null, this.setState('Failed', { code, signal })))
   }
 
   stop () {
-    this.setState('Stopping', this.appifi)
+    this.setState('Stopping', this.winas)
   }
 
   exit () {
-    if (this.appifi) this.appifi.removeAllListeners()
+    if (this.winas) this.winas.removeAllListeners()
     clearTimeout(this.timer)
     this.timer = null
     super.exit()
@@ -103,22 +103,22 @@ class Starting extends State {
 
 class Started extends State {
 
-  enter (appifi) {
+  enter (winas) {
     super.enter()
 
-    this.appifi = appifi
-    this.appifi.on('error', err => console.log('Appifi Error in Started: neglected', err))
-    this.appifi.on('close', (code, signal) => (this.appifi = null, this.setState('Failed', { code, signal})))
-    this.appifi.on('message', message => this.ctx.emit('message', message))
-    // this.ctx.ctx.emit('appifiStarted')
+    this.winas = winas
+    this.winas.on('error', err => console.log('Winas Error in Started: neglected', err))
+    this.winas.on('close', (code, signal) => (this.winas = null, this.setState('Failed', { code, signal})))
+    this.winas.on('message', message => this.ctx.emit('message', message))
+    // this.ctx.ctx.emit('winasStarted')
   }
 
   stop () {
-    this.setState('Stopping', this.appifi)
+    this.setState('Stopping', this.winas)
   }
 
   exit () {
-    if (this.appifi) this.appifi.removeAllListeners()
+    if (this.winas) this.winas.removeAllListeners()
     super.exit()
   }
 
@@ -127,11 +127,11 @@ class Started extends State {
 // Stopping can only be entered when being stopped externally, so it always goes to Stopped state
 class Stopping extends State {
 
-  enter (appifi) {
+  enter (winas) {
     super.enter()
-    appifi.kill()
-    appifi.on('error', err => console.log('Appifi Error in Started: neglected', err))
-    appifi.on('close', (code, signal) => this.setState('Stopped'))
+    winas.kill()
+    winas.on('error', err => console.log('Winas Error in Started: neglected', err))
+    winas.on('close', (code, signal) => this.setState('Stopped'))
   }
 
 }
@@ -164,17 +164,17 @@ class Failed extends State {
   }
 }
 
-class Appifi extends EventEmitter {
+class Winas extends EventEmitter {
 
   /**
-  Create Appifi
+  Create Winas
   @param {object} ctx - the model. ctx.releases is guaranteed to be available.
   @param {string} tagName - the currently deployed version
   */
   constructor(ctx) {
     super()
     this.ctx = ctx
-    this.appifiDir = ctx.appifiDir
+    this.winasDir = ctx.config.storage.dirs.winasDir
 
     // mutual exclusive
     this.startCbs = []
@@ -192,13 +192,13 @@ class Appifi extends EventEmitter {
   }
 
   isBeta () {
-    return this.ctx.releases.find(r => r.tagName() === this.tagName).isBeta()
+    return this.ctx.isBeta()
   }
 
   // start may land started or failed
   start (callback = () => {}) {
     if (this.stopCbs.length) {
-      let err = new Error('appifi is requested to stop')
+      let err = new Error('winas is requested to stop')
       err.code = 'ERACE'
       process.nextTick(() => callback(err))
       return
@@ -228,7 +228,7 @@ class Appifi extends EventEmitter {
   // stop may land stopped
   stop (callback = () => {}) {
     if (this.startCbs.length) {
-      let err = new Error('appifi is requested to start')
+      let err = new Error('winas is requested to start')
       err.code = 'ERACE'
       process.nextTick(() => callback(err))
       return
@@ -256,19 +256,18 @@ class Appifi extends EventEmitter {
     try {
       message = JSON.stringify(obj)
     } catch (error) {
-      console.log('[APPIFI]warning :', error, message)
+      console.log('[WINAS]warning :', error, message)
       return
     }
-    if(!this.state.appifi) 
-      return console.log(`[APPIFI]warning : appifi in ${ this.state.constructor.name } state`)
-    debug('*******Send To Appifi*******\n', message)
-    this.state.appifi.send && this.state.appifi.send(message)
+    if(!this.state.winas) 
+      return console.log(`[WINAS]warning : winas in ${ this.state.constructor.name } state`)
+    debug('*******Send To Winas*******\n', message)
+    this.state.winas.send && this.state.winas.send(message)
   }
 
   view () {
     return {
       state: this.getState(),
-      tagName: this.tagName,
       isBeta: this.isBeta()
     }
   }
@@ -286,10 +285,10 @@ class Appifi extends EventEmitter {
   }
 }
 
-Appifi.prototype.Stopped = Stopped
-Appifi.prototype.Starting = Starting
-Appifi.prototype.Started = Started
-Appifi.prototype.Stopping = Stopping
-Appifi.prototype.Failed = Failed
+Winas.prototype.Stopped = Stopped
+Winas.prototype.Starting = Starting
+Winas.prototype.Started = Started
+Winas.prototype.Stopping = Stopping
+Winas.prototype.Failed = Failed
 
-module.exports = Appifi
+module.exports = Winas
