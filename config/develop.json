@@ -19,17 +19,18 @@
       "d": "82db3f5a-d531-4bc9-8854-9431edbdd0b5"
     },
     "roots": {
-      "p": "/mnt/wisnuc",
+      "p": "/mnt/persistent",
       "a": "",
       "b": "",
       "winas": "",
       "tmp": ""
     },
     "dirs": {
-      "certDir": "/mnt/wisnuc/certificate",
-      "tmpDir": "/mnt/wisnuc/tmp",
-      "isoDir": "/mnt/wisnuc/iso",
-      "bleDir": "/mnt/wisnuc/ble"
+      "certDir": "/mnt/persistent/certificate",
+      "tmpDir": "/mnt/persistent/tmp",
+      "isoDir": "/mnt/persistent/iso",
+      "bleDir": "/mnt/persistent/ble",
+      "winasDir": "/mnt/winas"
     },
     "files": {
       "csr": "device.csr",
