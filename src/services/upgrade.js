@@ -21,7 +21,7 @@ class Upgrade extends event {
     try {
       this.currentVersion = fs.readFileSync(upgradeConf.version).toString().trim()
     } catch (e) { 
-      console.log(e) 
+      console.log(e)
     }
     
   }
