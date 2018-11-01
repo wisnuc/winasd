@@ -145,15 +145,27 @@ class Provisioning extends State {
   }
 }
 
+class Saveing extends State {
+
+  enter() {
+    let p = path.join(storageConf.roots.p, storageConf.files.provision)
+    fs.writeFile(p, '1', err => {
+      if (err) return this.setState('Failed', err)
+      this.setState('Finished')
+    })
+  }
+
+}
+
 // TODO: use telsa
 class ConnectTest extends State {
   
   enter () {
     this.ctx.useFake ? this.fakeTest(err => {
-      let nextState = err ? 'Failed': 'Finished'
+      let nextState = err ? 'Failed': 'Saveing'
       this.setState(nextState, err)
     }) : this.realTest(err => {
-      let nextState = err ? 'Failed': 'Finished'
+      let nextState = err ? 'Failed': 'Saveing'
       this.setState(nextState, err)
     })
   }
@@ -207,5 +219,6 @@ Provision.prototype.Finished = Finished
 Provision.prototype.Provisioning = Provisioning
 Provision.prototype.ConnectTest = ConnectTest
 Provision.prototype.PreBuild = PreBuild
+Provision.prototype.Saveing = Saveing
 
 module.exports = Provision

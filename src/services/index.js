@@ -64,25 +64,6 @@ class AppService {
     return this.config.system.globalNode ? 'node' : '/mnt/winas/node/bin/node'
   }
 
-  startServices () {
-    console.log('run in normal state')
-    this.net = new Net()
-    this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
-    this.bled.addHandler('CMD_SCAN', packet => {
-      console.log('CMD_SCAN', packet)
-      this.net.scan((err, list) => {
-        this.bled.sendMsg(err || list, e => e && console.error('send message via SPS error', e))
-      })
-    })
-    this.bled.addHandler('CMD_CONN', packet => {
-      console.log('CMD_CONN', packet)
-      net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
-        this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
-      })
-    })
-    this.winas = new Winas(this)
-  }
-
   appStart (callback) {
     if (!this.winas) return process.nextTick(() => callback(EApp404))
     if (this.operation) return process.nextTick(() => callback(ERace))
@@ -112,13 +93,12 @@ class AppService {
     this.net.on('Connected', () => {
       this.provision = new Provision()
       this.provision.on('Finished', () => {
-        let p = path.join(Config.storage.roots.p, Config.storage.files.provision)
-        fs.writeFile(p, '1', err => {
-          if (err) console.log('Provision File Write Failed: ', err)
-          this.provision.removeAllListeners()
-          this.provision.destroy()
-          this.provision = undefined
-        })
+        this.provision.removeAllListeners()
+        this.provision.destroy()
+        this.provision = undefined
+
+        // TODO: start winas
+        // Connect AWS IOT
       })
     })
 
@@ -135,6 +115,25 @@ class AppService {
         this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
       })
     })
+  }
+
+  startServices () {
+    console.log('run in normal state')
+    this.net = new Net()
+    this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
+    this.bled.addHandler('CMD_SCAN', packet => {
+      console.log('CMD_SCAN', packet)
+      this.net.scan((err, list) => {
+        this.bled.sendMsg(err || list, e => e && console.error('send message via SPS error', e))
+      })
+    })
+    this.bled.addHandler('CMD_CONN', packet => {
+      console.log('CMD_CONN', packet)
+      net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
+        this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
+      })
+    })
+    this.winas = new Winas(this)
   }
 
   getUpgradeList(cb) {
