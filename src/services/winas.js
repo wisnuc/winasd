@@ -75,7 +75,8 @@ class Starting extends State {
       */
       env: Object.assign({}, process.env, { 
         PATH: `/wisnuc/node/base/bin:${process.env.PATH}`,
-        NODE_ENV: 'dev_winas' 
+        NODE_ENV: 'dev_winas',
+        NODE_CONFIG_DIR: '/winas/build/config/'
       }),
       stdio: ['ignore', 'inherit', 'inherit', 'ipc'] 
     }
@@ -105,7 +106,6 @@ class Started extends State {
 
   enter (winas) {
     super.enter()
-
     this.winas = winas
     this.winas.on('error', err => console.log('Winas Error in Started: neglected', err))
     this.winas.on('close', (code, signal) => (this.winas = null, this.setState('Failed', { code, signal})))
