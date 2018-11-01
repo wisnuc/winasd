@@ -22,7 +22,7 @@
       "p": "/mnt/persistent",
       "a": "",
       "b": "",
-      "winas": "",
+      "winas": "/winas",
       "tmp": ""
     },
     "dirs": {
@@ -30,7 +30,7 @@
       "tmpDir": "/mnt/persistent/tmp",
       "isoDir": "/mnt/persistent/iso",
       "bleDir": "/mnt/persistent/ble",
-      "winasDir": "/mnt/winas"
+      "winasDir": "/winas"
     },
     "files": {
       "csr": "device.csr",
