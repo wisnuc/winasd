@@ -142,7 +142,7 @@ class Failed extends State {
   enter (err) {
     super.enter()
     this.error = err
-    this.timer = setTimeout(() => this.setState('Starting'), 100) 
+    this.timer = setTimeout(() => this.setState('Starting'), 1000 * 30) 
 
     // failed can only be landed for start request
     this.ctx.startCbs.forEach(cb => cb(this.error))
