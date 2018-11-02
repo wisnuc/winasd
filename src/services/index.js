@@ -53,7 +53,24 @@ class AppService {
     this._winas.on('message', this.handleWinasMessage.bind(this))
   }
 
-  handleWinasStarted() {}
+  get token() {
+    return this._token
+  }
+
+  set token(x) {
+    this._token = x
+    this.winas && this.winas.sendMsg({
+      type: 'token',
+      data: x
+    })
+  }
+
+  handleWinasStarted() {
+    this.winas.sendMsg({
+      type: 'token',
+      data: this.token
+    })
+  }
 
   handleWinasMessage(message) {}
 

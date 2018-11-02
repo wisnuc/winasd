@@ -124,9 +124,11 @@ class Failed extends State {
 }
 
 class Channel extends require('events') {
-  constructor() {
+  constructor(ctx) {
     super()
-    
+
+    this.ctx = ctx
+
     this.useFake = Config.system.useFake
 
     try {
@@ -145,7 +147,14 @@ class Channel extends require('events') {
     } catch(e) {
       return console.log('MQTT PAYLOAD FORMATE ERROR')
     }
-    console.log(data)
+    if (topic.endsWith('pipe')) {
+      this.ctx.winas.sendMessage({ 
+        type: 'pipe',
+        data
+      })
+    } else {
+      console.log('miss message: ', data)
+    }
   }
 
   get status() {
