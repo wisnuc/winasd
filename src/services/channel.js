@@ -63,7 +63,7 @@ class Connecting extends State {
     })
     device.on('error', cb)
     device.on('message', (topic, payload) => {
-      if (topic === `cloud/${ this.ctx.sn }/info`) {
+      if (topic === `cloud/${ this.ctx.sn }/connected`) {
         this.ctx.token = JSON.parse(payload.toString()).token
         cb()
       }
