@@ -28,8 +28,9 @@ class Connecting extends State {
   }
 
   fakeConnect(callback) {
-    let sn, device, finished = false
+    let sn, timer, device, finished = false
     let cb = (err) => {
+      clearTimeout(timer)
       if (finished) return
       finished = true
       device && device.removeAllListeners()
@@ -39,6 +40,15 @@ class Connecting extends State {
       }
       callback(err, device)
     }
+
+    timer = setTimeout(() => {
+      device.removeAllListeners()
+      device.on('error', () => {})
+      device.end(true)
+      device = undefined
+      cb(new Error('ETIMEOUT'))
+    }, 2000) // FIXME
+
     device = new Device({
       keyPath: path.join(certFolder, pkeyName),
       certPath: path.join(certFolder, crtName),
@@ -47,13 +57,30 @@ class Connecting extends State {
       host: IOTConf.endpoint,
     })
 
-    device.on('connect', () => cb())
+    device.on('connect', () => {
+      device.subscribe(`cloud/${ this.ctx.sn }/connected`)
+      device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ lanIp: '192.168.31.145' }))
+    })
     device.on('error', cb)
+    device.on('message', (topic, payload) => {
+      if (topic === `cloud/${ this.ctx.sn }/info`) {
+        this.ctx.token = JSON.parse(payload.toString()).token
+        cb()
+      }
+    })
     device.on('offline', () => cb(new Error('offline')))
   }
 
   realConnect(cb) {
 
+  }
+
+  publish(...args) {
+    this.connection.publish(...args)
+  }
+
+  subscribe(...args) {
+    this.connection.publish(...args)
   }
 }
 
@@ -64,8 +91,15 @@ class Connected extends State {
     this.connection.on('close', () => this.setState('Failed', new Error('close')))
     this.connection.on('error', err => this.setState('Failed', err))
     this.connection.on('offline', () => this.setState('Failed', new Error('offline')))
-    this.connection.subscribe(`cloud/${ this.ctx.sn }/connected`)
-    this.connection.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ lanIp: '192.168.31.145' }))
+    this.connection.subscribe(`cloud/${ this.ctx.sn }/pipe`)
+  }
+
+  publish(...args) {
+    this.state.publish(...args)
+  }
+
+  subscribe(...args) {
+    this.state.subscribe(...args)
   }
 
   exit(){
@@ -82,6 +116,10 @@ class Failed extends State {
     console.log(error)
     this.error = error
   }
+
+  publish() {}
+
+  subscribe() {}
 }
 
 class Channel extends require('events') {
@@ -100,7 +138,13 @@ class Channel extends require('events') {
   }
 
   handleIotMsg(topic, payload) {
-    console.log(topic, payload)
+    let data 
+    try {
+      data = JSON.parse(payload.toString())
+    } catch(e) {
+      return console.log('MQTT PAYLOAD FORMATE ERROR')
+    }
+    console.log(data)
   }
 
   get status() {
