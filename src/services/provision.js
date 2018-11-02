@@ -176,8 +176,12 @@ class ConnectTest extends State {
       if (finished) return
       finished = true
       this.device.removeAllListeners()
-      this.device.end()
-      callback(err)
+      this.device.on('error', () => {})
+      setTimeout(() => {
+        this.device.end(true)
+        this.device = undefined
+        callback(err)
+      }, 1000) // fix aws error
     }
     this.device = new Device({
       keyPath: path.join(certFolder, pkeyName),
@@ -186,7 +190,6 @@ class ConnectTest extends State {
       clientId: this.ctx.sn,
       host: iotConf.endpoint,
     })
-
     this.device.on('connect', () => cb())
     this.device.on('error', cb)
   }
