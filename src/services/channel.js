@@ -47,7 +47,7 @@ class Connecting extends State {
       device.end(true)
       device = undefined
       cb(new Error('ETIMEOUT'))
-    }, 2000) // FIXME
+    }, 5000) // FIXME
 
     device = new Device({
       keyPath: path.join(certFolder, pkeyName),
