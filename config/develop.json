@@ -48,6 +48,7 @@
     "bin": "/ble.bin"
   },
   "system": {
-    "globalNode": true
+    "globalNode": true,
+    "useFake": true
   }
 }

@@ -179,8 +179,8 @@ class Winas extends EventEmitter {
     // mutual exclusive
     this.startCbs = []
     this.stopCbs = []
-
-    new Starting(this)
+    if (process.argv.includes('useWinas'))
+      new Starting(this)
   }
 
   getState() {

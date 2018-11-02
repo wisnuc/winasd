@@ -6,10 +6,11 @@ const fs = require('fs')
 const child = require('child_process')
 
 const Upgrade = require('./upgrade')
-const Bled = require('./Bled')
-const Net = require('./Net')
+const Bled = require('./bled')
+const Net = require('./net')
 const Provision = require('./provision')
 const Winas = require('./winas')
+const Channel = require('./channel')
 
 class AppService {
   constructor() {
@@ -134,6 +135,7 @@ class AppService {
       })
     })
     this.winas = new Winas(this)
+    this.channel = new Channel()
   }
 
   getUpgradeList(cb) {
@@ -152,6 +154,10 @@ class AppService {
 
   destroy() {
     if (this.winas) this.winas.destroy()
+  }
+
+  boundDevice() {
+
   }
 }
 

@@ -195,13 +195,21 @@ class ConnectTest extends State {
   realTest(callback) {
     
   }
+
+  exit() {
+    if (this.device) {
+      this.device.removeAllListeners()
+      this.device.on('error', () => {})
+      this.device.end()
+    }
+  }
 }
 
 class Provision extends require('events'){
 
   constructor() {
     super()
-    this.useFake = true
+    this.useFake = Config.system.useFake
     new PreBuild(this)
   }
 
