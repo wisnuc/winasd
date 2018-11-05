@@ -18,7 +18,8 @@ app.use('/upgrade', require('./routes/upgrade')(appService))
 app.post('/bind', (req, res, next) => {
   if (!req.body.encrypted) return res.status(400).end()
   appService.boundDevice(req.body.encrypted, (err, data) => {
-    
+    if (err) return res.status(400).json(err)
+    res.status(200).json(data)
   })
 })
 
