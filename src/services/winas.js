@@ -85,7 +85,7 @@ class Starting extends State {
 
     this.winas = child.spawn(this.ctx.nodePath(), args, opts)
     this.winas.on('error', err => console.log('Winas Error in Starting: neglected', err))
-    this.winas.on('message', message => (this.ctx.emit('message', message), this.setState('Started', this.winas)))
+    this.winas.once('message', message => (this.ctx.emit('message', message), this.setState('Started', this.winas)))
     this.winas.on('close', (code, signal) => (this.winas = null, this.setState('Failed', { code, signal })))
   }
 
@@ -109,7 +109,7 @@ class Started extends State {
     this.winas = winas
     this.winas.on('error', err => console.log('Winas Error in Started: neglected', err))
     this.winas.on('close', (code, signal) => (this.winas = null, this.setState('Failed', { code, signal})))
-    this.winas.on('message', message => this.handleWinasMessage.bind(this))
+    this.winas.on('message', message => this.handleWinasMessage(message))
     // this.ctx.ctx.emit('winasStarted')
   }
 
