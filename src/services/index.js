@@ -72,6 +72,11 @@ class AppService {
       type: 'token',
       data: this.token
     })
+
+    this.boundUser && this.winas.sendMessage({
+      type:"boundUser",
+      data: this.boundUser
+    })
   }
 
   /**
@@ -81,7 +86,7 @@ class AppService {
    * message.data .....
    */
   handleWinasMessage(message) {
-    debug('FROM WINAS MESSAGE', message)
+    debug('FROM WINAS MESSAGE:\n', message)
   }
 
   isBeta() {
@@ -184,7 +189,13 @@ class AppService {
     if (!this.token) return process.nextTick(() => callback(new Error('Winas Net Error')))
     if (this.winas.users && this.winas.users.length === 0) {
       return reqBind(encrypted, this.token, (err, data) => {
-        debug('req bind', err, data)
+        if (err) return callback(err)
+        let user = data.data
+        this.boundUser = user
+        this.winas.sendMessage({
+          type:"boundUser",
+          data: user
+        })
       })
     }
     return process.nextTick(() => callback(new Error('Winas State Error')))
