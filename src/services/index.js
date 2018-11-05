@@ -4,7 +4,7 @@ const rimraf = require('rimraf')
 const path = require('path')
 const fs = require('fs')
 const child = require('child_process')
-const debug = require('ws:app')
+const debug = require('debug')('ws:app')
 
 const Upgrade = require('./upgrade')
 const Bled = require('./bled')
