@@ -11,6 +11,7 @@ const Net = require('./net')
 const Provision = require('./provision')
 const Winas = require('./winas')
 const Channel = require('./channel')
+const reqBind = require('../lib/bind')
 
 class AppService {
   constructor() {
@@ -72,7 +73,15 @@ class AppService {
     })
   }
 
-  handleWinasMessage(message) {}
+  /**
+   * 
+   * @param {object} message 
+   * message.type
+   * message.data .....
+   */
+  handleWinasMessage(message) {
+    debug('FROM WINAS MESSAGE', message)
+  }
 
   isBeta() {
     return true
@@ -114,9 +123,6 @@ class AppService {
         this.provision.removeAllListeners()
         this.provision.destroy()
         this.provision = undefined
-
-        // TODO: start winas
-        // Connect AWS IOT
       })
     })
 
@@ -173,8 +179,14 @@ class AppService {
     if (this.winas) this.winas.destroy()
   }
 
-  boundDevice() {
-
+  boundDevice(encrypted, callback) {
+    if (!this.token) return process.nextTick(() => callback(new Error('Winas Net Error')))
+    if (this.winas.users && this.winas.users.length === 0) {
+      return reqBind(encrypted, this.token, (err, data) => {
+        debug('req bind', err, data)
+      })
+    }
+    return process.nextTick(() => callback(new Error('Winas State Error')))
   }
 }
 

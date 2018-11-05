@@ -109,8 +109,23 @@ class Started extends State {
     this.winas = winas
     this.winas.on('error', err => console.log('Winas Error in Started: neglected', err))
     this.winas.on('close', (code, signal) => (this.winas = null, this.setState('Failed', { code, signal})))
-    this.winas.on('message', message => this.ctx.emit('message', message))
+    this.winas.on('message', message => this.handleWinasMessage.bind(this))
     // this.ctx.ctx.emit('winasStarted')
+  }
+
+  handleWinasMessage(message) {
+    let obj
+    try {
+      obj = JSON.parse(message)
+    } catch (e) {
+      return console.log('FROM_WINAS_MESSAGE, parse error: ', e)
+    }
+
+    if (obj.type === 'appifi_users') {
+      this.users = obj.users
+    }
+
+    this.ctx.emit('message', obj)
   }
 
   stop () {
@@ -120,6 +135,7 @@ class Started extends State {
   exit () {
     if (this.winas) this.winas.removeAllListeners()
     this.winas = undefined
+    this.users = undefined
     super.exit()
   }
 
@@ -182,6 +198,12 @@ class Winas extends EventEmitter {
     this.stopCbs = []
     if (process.argv.includes('--useWinas'))
       new Starting(this)
+  }
+
+  get users() {
+    if (this.getState() !== 'Started') return
+    if (!this.state.users) return
+    return this.state.users
   }
 
   getState() {

@@ -10,7 +10,13 @@ if (process.env.DEBUG) global.useDebug = true
 app.set('json spaces', 0)
 app.use(logger('dev', { skip: (req, res) => res.nolog === true || app.nolog === true }))
 app.get('/', (req, res) => res.status(200).send('#hello world'))
-app.get('/upgrade', require('./routes/upgrade')(appService))
+app.use('/upgrade', require('./routes/upgrade')(appService))
+app.post('/bind', (req, res, next) => {
+  if (!req.body.encrypted) return res.status(400).end()
+  appService.boundDevice(req.body.encrypted, (err, data) => {
+    
+  })
+})
 
 app.listen(3001, err => {
   if (err) return console.log('winasd listen error: ', err.message)

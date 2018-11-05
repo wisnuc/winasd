@@ -1,5 +1,4 @@
 const Device = require('aws-iot-device-sdk').device
-const crypto = require('crypto')
 const fs = require('fs')
 const path = require('path')
 const Config = require('config')
@@ -9,9 +8,7 @@ const storageConf = Config.get('storage')
 const IOTConf = Config.get('iot')
 const certFolder = storageConf.dirs.certDir
 const crtName = storageConf.files.cert
-const csrName = storageConf.files.csr
 const pkeyName = 'device.key'
-const pubKName = 'device.pub'
 const snName = 'deviceSN'
 const caName = storageConf.files.caCert
 
@@ -47,7 +44,7 @@ class Connecting extends State {
       device.end(true)
       device = undefined
       cb(new Error('ETIMEOUT'))
-    }, 5000) // FIXME
+    }, 10000) // FIXME:
 
     device = new Device({
       keyPath: path.join(certFolder, pkeyName),
@@ -166,6 +163,10 @@ class Channel extends require('events') {
     return {
       state: this.status
     }
+  }
+
+  destroy() {
+    this.state.destroy()
   }
 }
 
