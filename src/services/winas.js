@@ -180,7 +180,7 @@ class Winas extends EventEmitter {
     // mutual exclusive
     this.startCbs = []
     this.stopCbs = []
-    if (process.argv.includes('useWinas'))
+    if (process.argv.includes('--useWinas'))
       new Starting(this)
   }
 
