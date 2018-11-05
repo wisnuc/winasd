@@ -9,12 +9,39 @@ if (process.env.DEBUG) global.useDebug = true
 
 app.set('json spaces', 0)
 app.use(logger('dev', { skip: (req, res) => res.nolog === true || app.nolog === true }))
+// install body parser
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }))
+
 app.get('/', (req, res) => res.status(200).send('#hello world'))
 app.use('/upgrade', require('./routes/upgrade')(appService))
 app.post('/bind', (req, res, next) => {
   if (!req.body.encrypted) return res.status(400).end()
   appService.boundDevice(req.body.encrypted, (err, data) => {
     
+  })
+})
+
+// 404 handler
+app.use((req, res, next) => next(Object.assign(new Error('404 Not Found'), { status: 404 })))
+
+// 500 handler
+app.use((err, req, res, next) => {
+  if (err) {
+    if (log.error === 'all' || process.env.LOGE) {
+      console.log(':: ', err)
+    }
+  }
+
+  // TODO check nodejs doc for more error properties such as syscall.
+  res.status(err.status || 500).json({
+    code: err.code,
+    xcode: err.xcode,
+    message: err.message,
+    result: err.result,
+    index: err.index,
+    reason: err.reason,
+    where: err.where
   })
 })
 
