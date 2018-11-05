@@ -87,7 +87,7 @@ class Connecting extends State {
 
 class Connected extends State {
   enter (connection, token) {
-    this.token = token
+    this.ctx.token = token
     this.connection = connection
     this.connection.on('message', this.ctx.handleIotMsg.bind(this.ctx))
     this.connection.on('close', () => this.setState('Failed', new Error('close')))
@@ -109,6 +109,7 @@ class Connected extends State {
     this.connection.on('error', () => {})
     this.connection.end()
     this.connection = undefined
+    this.ctx.token = undefined
   }
 }
 
