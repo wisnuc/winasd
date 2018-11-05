@@ -12,7 +12,7 @@ module.exports = (encrypted, token, callback) => {
   let signature
   try {
     let sign = crypto.createSign('SHA256')
-    sign.write(req.body.encrypted)
+    sign.write(encrypted)
     sign.end()
     signature = sign.sign(fs.readFileSync(path.join(certFolder, pkeyName)), 'hex')
   } catch(e) {
