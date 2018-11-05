@@ -152,7 +152,7 @@ class AppService {
       })
     })
     this.winas = new Winas(this)
-    this.channel = new Channel()
+    this.channel = new Channel(this)
   }
 
   getUpgradeList(cb) {
