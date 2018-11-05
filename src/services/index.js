@@ -196,6 +196,7 @@ class AppService {
           type:"boundUser",
           data: user
         })
+        callback(null, user)
       })
     }
     return process.nextTick(() => callback(new Error('Winas State Error')))
