@@ -6,7 +6,8 @@
   "scripts": {
     "test": "DEBUG='state*' NODE_PATH=. NODE_ENV=develop mocha",
     "dev": "DEBUG='ws*' NODE_ENV=develop node src/app.js",
-    "dev_useWinas": "DEBUG='ws*' NODE_ENV=develop node src/app.js --useWinas --standalone"
+    "dev_useWinas": "DEBUG='ws*' NODE_ENV=develop WINAS_ENV=winas node src/app.js --useWinas --standalone",
+    "dev_useDevWinas": "DEBUG='ws*' NODE_ENV=develop WINAS_ENV=dev_winas node src/app.js --useWinas --standalone"
   },
   "author": "",
   "license": "ISC",

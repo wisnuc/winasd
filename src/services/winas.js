@@ -75,7 +75,7 @@ class Starting extends State {
       */
       env: Object.assign({}, process.env, { 
         PATH: `/wisnuc/node/base/bin:${process.env.PATH}`,
-        NODE_ENV: 'dev_winas',
+        NODE_ENV: process.env.WINAS_ENV ? process.env.WINAS_ENV : 'winas',
         NODE_CONFIG_DIR: '/winas/build/config/'
       }),
       stdio: ['ignore', 'inherit', 'inherit', 'ipc'] 
@@ -119,6 +119,7 @@ class Started extends State {
 
   exit () {
     if (this.winas) this.winas.removeAllListeners()
+    this.winas = undefined
     super.exit()
   }
 
