@@ -51,7 +51,7 @@ class Connecting extends State {
       certPath: path.join(certFolder, crtName),
       caPath: path.join(certFolder, caName),
       clientId: this.ctx.sn,
-      keepalive: 10,
+      keepalive: 5,
       host: IOTConf.endpoint,
     })
 
@@ -115,6 +115,7 @@ class Failed extends State {
   enter(error) {
     console.log(error)
     this.error = error
+    this.timer = setTimeout(() => this.setState('Connecting'), 5000)
   }
 
   publish() {}
