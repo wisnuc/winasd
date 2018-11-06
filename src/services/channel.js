@@ -51,7 +51,7 @@ class Connecting extends State {
       certPath: path.join(certFolder, crtName),
       caPath: path.join(certFolder, caName),
       clientId: this.ctx.sn,
-      keepalive: 1,
+      keepalive: 10,
       host: IOTConf.endpoint,
     })
 
