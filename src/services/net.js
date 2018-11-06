@@ -81,12 +81,18 @@ class Connecting extends State {
         cb(error || stderr)
         this.setState('Disconnected', error || stderr)
       } else {
-        this.child_ifconf = exec(`ifconfig ${this.ctx.device}`, (err, stdo, stde) => {
+        this.child_ifconf = exec(`ifconfig ${this.ctx.device} | grep inet`, (err, stdo, stde) => {
           if (err || stde) {
             cb(err || stde)
             this.setState('Disconnected', err || stde)
           } else {
-            const ip = stdo.toString().split('addr:')[1].split(' ')[0]
+            let ip
+            try {
+              ip = stdo.toString().split('\n')[0].trim().split(' ').filter(x => !!x.trim())[1].split(':').pop().trim()
+            } catch(e) {
+              cb(e)
+              return this.setState('Connected')
+            }
             cb(null, { ip })
             this.setState('Connected')
           }
