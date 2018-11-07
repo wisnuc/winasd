@@ -61,7 +61,7 @@ class Connecting extends State {
 
     device.on('connect', () => {
       device.subscribe(`cloud/${ this.ctx.sn }/connected`)
-      device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ lanIp: networkInterface() }))
+      device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ lanIp: networkInterface().address }))
     })
     device.on('error', cb)
     device.on('message', (topic, payload) => {
