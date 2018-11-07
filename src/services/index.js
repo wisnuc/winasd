@@ -32,6 +32,10 @@ class AppService {
       console.log(e)
     }
 
+    try {
+      this.deviceSN = fs.readFileSync(path.join(Config.storage.dir.certDir, 'deviceSN')).toString().trim()
+    } catch(e) { throw e }
+
     this.upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
 
     if (fs.existsSync(path.join(Config.storage.roots.p, Config.storage.files.provision))) {
@@ -178,7 +182,11 @@ class AppService {
       upgrade: this.upgrade && this.upgrade.view(),
       operation: this.operation,
       winas: this.winas && this.winas.view(),
-      provision: this.provision && this.provision.view()
+      provision: this.provision && this.provision.view(),
+      channel: this.channel && this.channel.view(),
+      device: {
+        sn: this.deviceSN
+      }
     }
   }
 

@@ -10,7 +10,6 @@ const IOTConf = Config.get('iot')
 const certFolder = storageConf.dirs.certDir
 const crtName = storageConf.files.cert
 const pkeyName = 'device.key'
-const snName = 'deviceSN'
 const caName = storageConf.files.caCert
 
 class Connecting extends State {
@@ -135,12 +134,8 @@ class Channel extends require('events') {
 
     this.useFake = Config.system.useFake
 
-    try {
-      this.sn = fs.readFileSync(path.join(certFolder, snName)).toString().trim()
-    } catch (e) {
-      console.log(e)
-      throw new Error('SN NOT FOUND')
-    }
+    this.sn = this.ctx.deviceSN
+
     new Connecting(this)
   }
 
