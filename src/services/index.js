@@ -33,7 +33,7 @@ class AppService {
     }
 
     try {
-      this.deviceSN = fs.readFileSync(path.join(Config.storage.dir.certDir, 'deviceSN')).toString().trim()
+      this.deviceSN = fs.readFileSync(path.join(Config.storage.dirs.certDir, 'deviceSN')).toString().trim()
     } catch(e) { throw e }
 
     this.upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
