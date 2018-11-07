@@ -119,7 +119,7 @@ class Fetch extends EventEmitter {
     }
 
     return {
-      state: this.getState(),
+      state: this.status,
       view: this.state.view(),
       last,
     } 
