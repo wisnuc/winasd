@@ -32,7 +32,7 @@ class AppService {
       console.log(e)
     }
 
-    this.Upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
+    this.upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
 
     if (fs.existsSync(path.join(Config.storage.roots.p, Config.storage.files.provision))) {
       this.startServices()
@@ -168,14 +168,14 @@ class AppService {
   }
 
   getUpgradeList(cb) {
-    return this.Upgrade.list(cb)
+    return this.upgrade.list(cb)
   }
 
   view() {
     return {
       net: this.net && this.net.view(),
-      ble: this.ble && this.ble.view(),
-      upgrade: this.upgrade.view(),
+      ble: this.bled && this.bled.view(),
+      upgrade: this.upgrade && this.upgrade.view(),
       operation: this.operation,
       winas: this.winas && this.winas.view(),
       provision: this.provision && this.provision.view()
