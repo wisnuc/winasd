@@ -3,6 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const Config = require('config')
 const State = require('../lib/state')
+const { networkInterface } = require('../lib/device')
 
 const storageConf = Config.get('storage')
 const IOTConf = Config.get('iot')
@@ -60,7 +61,7 @@ class Connecting extends State {
 
     device.on('connect', () => {
       device.subscribe(`cloud/${ this.ctx.sn }/connected`)
-      device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ lanIp: '192.168.31.145' }))
+      device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ lanIp: networkInterface() }))
     })
     device.on('error', cb)
     device.on('message', (topic, payload) => {
