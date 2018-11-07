@@ -35,7 +35,7 @@ app.use((req, res, next) => next(Object.assign(new Error('404 Not Found'), { sta
 // 500 handler
 app.use((err, req, res, next) => {
   if (err) {
-    if (log.error === 'all' || process.env.LOGE) {
+    if (req.log || process.env.LOGE) {
       console.log(':: ', err)
     }
   }
