@@ -75,8 +75,8 @@ class Upgrade extends event {
 
   view() {
     return {
-      fetch: this.fetcher.view(),
-      download: this.downloader.view()
+      fetch: this.fetcher && this.fetcher.view(),
+      download: this.downloader && this.downloader.view()
     }
   }
 }

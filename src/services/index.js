@@ -173,11 +173,12 @@ class AppService {
 
   view() {
     return {
-      net: this.net.view(),
-      ble: this.ble.view(),
+      net: this.net && this.net.view(),
+      ble: this.ble && this.ble.view(),
       upgrade: this.upgrade.view(),
       operation: this.operation,
-      winas: this.winas ? this.winas.view() : null,
+      winas: this.winas && this.winas.view(),
+      provision: this.provision && this.provision.view()
     }
   }
 

@@ -198,7 +198,8 @@ class Download extends EventEmitter {
   view() {
     return {
       version: this.version,
-      state: this.status
+      state: this.status,
+      bytesWritten: this.bytesWritten()
     }
   }
 }

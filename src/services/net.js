@@ -3,6 +3,7 @@ const events = require('events')
 const readline = require('readline')
 const BaseState = require('../lib/state')
 const debug = require('debug')('ws:net')
+const { networkInterface } = require('../lib/device')
 
 class State extends BaseState{
     exit() {
@@ -227,7 +228,8 @@ class Net extends events {
 
   view() {
     return {
-      state: this.state.constructor.name
+      state: this.state.constructor.name,
+      networkInterface: networkInterface()
     }
   }
 }
