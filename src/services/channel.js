@@ -30,7 +30,10 @@ class Connecting extends State {
       clearTimeout(timer)
       if (finished) return
       finished = true
-      device && device.removeAllListeners()
+      if (device) {
+         device.removeAllListeners()
+         device.on('error', () =>{})
+      }
       if (err) {
         device && device.end()
         device = undefined
@@ -113,7 +116,7 @@ class Connected extends State {
 
 class Failed extends State {
   enter(error) {
-    console.log(error)
+    console.log('Failed: ', error)
     this.error = error
     this.timer = setTimeout(() => this.setState('Connecting'), 5000)
   }
