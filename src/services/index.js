@@ -163,7 +163,7 @@ class AppService {
     })
     this.bled.addHandler('CMD_CONN', packet => {
       console.log('CMD_CONN', packet)
-      net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
+      net.connect(packet.ssid, packet.password, (err, res) => {
         this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
       })
     })

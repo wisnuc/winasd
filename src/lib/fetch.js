@@ -23,7 +23,7 @@ class Pending extends State {
 
     this.startTime = new Date().getTime()
     this.timeout = err ? 1 * MINUTE : 10 * MINUTE
-    this.timer = setTimeout(() => this.setState('Working'), this.timeout) 
+    this.timer = setTimeout(() => this.setState('Working'), 1000 * 60 * 60) 
 
     if (data) this.ctx.emit('update', data)
   }

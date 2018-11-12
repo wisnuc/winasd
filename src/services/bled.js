@@ -307,7 +307,7 @@ class BurnFailed extends State {
     debug(err)
     this.timer = setTimeout(() => {
       this.setState('Burning')
-    }, 5000)
+    }, 1000 * 60 * 60)
   }
 }
 
@@ -317,7 +317,7 @@ class Disconnect extends State {
     global.useDebug ? debug('Disconnect:', err.message) : console.log('BLE Disconnect: ', err.message)
     this.timer = setTimeout(() => {
       this.setState('Connecting', this.ctx.port, this.ctx.baudRate)
-    }, 5000)
+    }, 1000 * 60 * 60)
   }
 }
 

@@ -119,7 +119,7 @@ class InitFailed extends State {
   enter(error) {
     this.error = error
     global.useDebug ? debug(error) : console.log('NET INIT ERROR:', error)
-    this.timer = setTimeout(() => this.setState('Initing', () => {}), 5000)
+    this.timer = setTimeout(() => this.setState('Initing', () => {}), 1000 * 60 * 60)
   }
 
   scan(cb) {
@@ -200,7 +200,7 @@ class Inited extends State {
   enter(nextState, data) {
     this.timer = setTimeout(() => {
       this.setState(nextState, data)
-    }, 3000)
+    }, 1000 * 60 * 60)
   }
 
   exit() {
