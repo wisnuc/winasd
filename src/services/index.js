@@ -6,6 +6,8 @@ const fs = require('fs')
 const child = require('child_process')
 const debug = require('debug')('ws:app')
 
+const DataStore = require('../lib/DataStore')
+
 const Upgrade = require('./upgrade')
 const Bled = require('./bled')
 const Net = require('./net')
@@ -28,9 +30,18 @@ class AppService {
       mkdirp.sync(Config.storage.dirs.tmpDir)
       mkdirp.sync(Config.storage.dirs.isoDir)
       mkdirp.sync(Config.storage.dirs.certDir)
+      mkdirp.sync(Config.storage.dirs.bound)
     } catch(e) {
       console.log(e)
     }
+
+    this.userStore = new DataStore({
+      isArray: false,
+      file: path.join(Config.storage.dirs.bound, Config.storage.files.boundUser),
+      tmpDir: path.join(Config.storage.dirs.tmpDir)
+    })
+
+    this.userStore.on('Update', this.handleBoundUserUpdate.bind(this))
 
     try {
       this.deviceSN = fs.readFileSync(path.join(Config.storage.dirs.certDir, 'deviceSN')).toString().trim()
@@ -77,10 +88,16 @@ class AppService {
       data: this.token
     })
 
-    this.boundUser && this.winas.sendMessage({
+    this.handleBoundUserUpdate()
+  }
+
+  handleBoundUserUpdate() {
+    this.userStore.data && this.winas.sendMessage({
       type:"boundUser",
-      data: this.boundUser
+      data: this.userStore.data
     })
+
+    this.bled.setStationStatus(this.boundUser.data ? 1: 0, () => {})
   }
 
   /**
@@ -168,9 +185,11 @@ class AppService {
       })
     })
     this.bled.on('Connected', () => {
-      if (this.deviceSN) {
+      if (this.deviceSN) { // update sn
         this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)), () => {})
       }
+      // update status
+      this.bled.setStationStatus(this.boundUser.data ? 1: 0, () => {})
     })
     this.winas = new Winas(this)
     this.channel = new Channel(this)
@@ -205,12 +224,9 @@ class AppService {
       return reqBind(encrypted, this.token, (err, data) => {
         if (err) return callback(err)
         let user = data.data
-        this.boundUser = user
-        this.winas.sendMessage({
-          type:"boundUser",
-          data: user
+        this.userStore.save(user, err => {
+          callback(null, user)
         })
-        callback(null, user)
       })
     }
     return process.nextTick(() => callback(new Error('Winas State Error')))

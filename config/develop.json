@@ -30,13 +30,15 @@
       "tmpDir": "/mnt/persistent/tmp",
       "isoDir": "/mnt/persistent/iso",
       "bleDir": "/mnt/persistent/ble",
-      "winasDir": "/winas"
+      "winasDir": "/winas",
+      "bound": "/mnt/persistent/bound"
     },
     "files": {
       "csr": "device.csr",
       "cert": "device.cert",
       "caCert": "awsCA.pem",
-      "provision": "provisioned"
+      "provision": "provisioned",
+      "boundUser": "boundUser.json"
     }
   },
   "provision": {
