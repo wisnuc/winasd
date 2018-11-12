@@ -342,7 +342,7 @@ class Bled extends EventEmitter {
 
   dispatch(type, data) {
     if (this.handlers.has(type)) {
-      this.handlers[type].foreach(cb => cb(data))
+      this.handlers.get(type).forEach(cb => cb(data))
     }
   }
 
