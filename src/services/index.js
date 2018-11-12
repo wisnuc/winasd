@@ -167,6 +167,11 @@ class AppService {
         this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
       })
     })
+    this.bled.on('Connected', () => {
+      if (this.deviceSN) {
+        this.bled.setStationId(Buffer.from(this.deviceSN))
+      }
+    })
     this.winas = new Winas(this)
     this.channel = new Channel(this)
   }
