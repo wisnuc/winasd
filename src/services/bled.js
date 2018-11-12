@@ -327,22 +327,22 @@ class Bled extends EventEmitter {
     this.port = port
     this.baudRate = baudRate
     this.bin = bin
-    this.handers = new Map()
+    this.handlers = new Map()
     new Connecting(this, this.port, this.baudRate)
   }
 
   addHandler(type, callback){
-    if (this.handers.has(type)) {
-      this.handers[type].push(callback)
+    if (this.handlers.has(type)) {
+      this.handlers.get(type).push(callback)
     }
     else {
-      this.handers[type] = [callback]
+      this.handlers.set(type, [callback])
     }
   }
 
   dispatch(type, data) {
-    if (this.handers.has(type)) {
-      this.handers[type].foreach(cb => cb(data))
+    if (this.handlers.has(type)) {
+      this.handlers[type].foreach(cb => cb(data))
     }
   }
 
