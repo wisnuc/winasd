@@ -169,7 +169,7 @@ class AppService {
     })
     this.bled.on('Connected', () => {
       if (this.deviceSN) {
-        this.bled.setStationId(Buffer.from(this.deviceSN))
+        this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)), () => {})
       }
     })
     this.winas = new Winas(this)
