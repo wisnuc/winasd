@@ -189,7 +189,7 @@ class AppService {
         this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)), () => {})
       }
       // update status
-      this.bled.setStationStatus(this.userStore.data ? 1: 0, () => {})
+      this.bled.setStationStatus(this.userStore.data ? 2: 1, () => {})
     })
     this.winas = new Winas(this)
     this.channel = new Channel(this)
