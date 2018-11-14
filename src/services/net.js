@@ -79,28 +79,19 @@ class Connecting extends State {
   enter (essid, key, cb) {
     this.child_conn = exec(`nmcli device wifi connect ${essid} password ${key}`, (error, stdout, stderr) => {
       if (error || stderr) {
-        cb({ error: {
-          code: 'ENODEVICE',
-          message: 'connect failed'
-        }})
+        cb(error || stderr)
         this.setState('Disconnected', error || stderr)
       } else {
         this.child_ifconf = exec(`ifconfig ${this.ctx.device} | grep inet`, (err, stdo, stde) => {
           if (err || stde) {
-            cb({ error: {
-              code: 'ENODEVICE',
-              message: 'connect failed'
-            }})
+            cb(error || stderr)
             this.setState('Disconnected', err || stde)
           } else {
             let ip
             try {
               ip = stdo.toString().split('\n')[0].trim().split(' ').filter(x => !!x.trim())[1].split(':').pop().trim()
             } catch(e) {
-              cb({ error: {
-                code: 'ENOIP',
-                message: 'connect failed'
-              }})
+              cb(error || stderr)
               return this.setState('Connected')
             }
             cb(null, { ip })
