@@ -189,7 +189,7 @@ class AppService {
     })
 
     this.bled.addHandler('CMD_NET', packet => {
-      console.log('CMD_CONN', packet)
+      console.log('CMD_NET', packet)
       this.net.netInfo((err, res) => {
         this.bled.sendMsg(err ? { error: err} : { data: res }, e => e && console.error('send message via SPS error', e))
       })

@@ -148,6 +148,7 @@ class Connected extends State {
             let packet = JSON.parse(pack)
             if (packet.action === 'scan') this.ctx.dispatch('CMD_SCAN', packet)
             if (packet.action === 'conn') this.ctx.dispatch('CMD_CONN', packet)
+            if (packet.action === 'net') this.ctx.dispatch('CMD_NET', packet)
           } catch(e) {
             this.sendMsg({ code: 'ENOTJSON', message: 'packet error'})
           }
