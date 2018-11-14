@@ -178,20 +178,20 @@ class AppService {
     this.bled.addHandler('CMD_SCAN', packet => {
       console.log('CMD_SCAN', packet)
       this.net.scan((err, list) => {
-        this.bled.sendMsg(err || list, e => e && console.error('send message via SPS error', e))
+        this.bled.sendMsg(err ? { error: err} : { data: list}, e => e && console.error('send message via SPS error', e))
       })
     })
     this.bled.addHandler('CMD_CONN', packet => {
       console.log('CMD_CONN', packet)
       this.net.connect(packet.ssid, packet.password, (err, res) => {
-        this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
+        this.bled.sendMsg(err ? { error: err} : { data: res}, e => e && console.error('send message via SPS error', e))
       })
     })
 
     this.bled.addHandler('CMD_NET', packet => {
       console.log('CMD_CONN', packet)
       this.net.netInfo((err, res) => {
-        this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
+        this.bled.sendMsg(err ? { error: err} : { data: res }, e => e && console.error('send message via SPS error', e))
       })
     })
 
