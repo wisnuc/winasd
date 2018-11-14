@@ -144,8 +144,13 @@ class Connected extends State {
         if (data.length && data[data.length - 1] === 0x0A) { // data end with \n
           const pack = Buffer.concat(this.dataArray).toString().trim()
           //console.log('Get pack:', pack)
-          if (pack === 'scan') this.ctx.dispatch('CMD_SCAN', pack)
-          if (pack === 'conn') this.ctx.dispatch('CMD_CONN', pack)
+          try {
+            let packet = JSON.parse(pack)
+            if (packet.action === 'scan') this.ctx.dispatch('CMD_SCAN', packet)
+            if (packet.action === 'conn') this.ctx.dispatch('CMD_CONN', packet)
+          } catch(e) {
+            this.sendMsg({ code: 'ENOTJSON', message: 'packet error'})
+          }
           this.dataArray.length = 0
         }
       } else if (data.length === 3 && data[1] === data[2] && [0x20, 0x21, 0x22, 0x23].includes(data[2])) { // BLE status
