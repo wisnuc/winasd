@@ -171,6 +171,9 @@ class AppService {
   startServices () {
     console.log('run in normal state')
     this.net = new Net()
+    this.net.on('Connected', () => {
+      this.channel && this.channel.connect()
+    })
     this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
     this.bled.addHandler('CMD_SCAN', packet => {
       console.log('CMD_SCAN', packet)
@@ -180,10 +183,18 @@ class AppService {
     })
     this.bled.addHandler('CMD_CONN', packet => {
       console.log('CMD_CONN', packet)
-      net.connect(packet.ssid, packet.password, (err, res) => {
+      this.net.connect(packet.ssid, packet.password, (err, res) => {
         this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
       })
     })
+
+    this.bled.addHandler('CMD_NET', packet => {
+      console.log('CMD_CONN', packet)
+      this.net.netInfo((err, res) => {
+        this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
+      })
+    })
+
     this.bled.on('Connected', () => {
       if (this.deviceSN) { // update sn
         this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)), () => {})

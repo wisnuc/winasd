@@ -214,6 +214,42 @@ class Net extends events {
     new Initing(this)
   }
 
+  set state(obj) {
+    this._state = obj
+    this.emit('StateUpdate', obj.constructor.name)
+  }
+
+  get state() {
+    return this._state
+  }
+
+  get status() {
+    return this.state.constructor.name === 'Connected' ? 1 : 0
+  }
+
+  netInfo (callback) {
+    exec(`nmcli d | grep wifi`, (error, stdout, stderr) => {
+      if (error || stderr) {
+        let e = error || stderr
+        return callback(e)
+      }
+      else {
+        const nic = {}
+        try {
+          const arr = stdout.split(/\s+/)
+          nic.name = arr[0]
+          nic.type = arr[1]
+          nic.state = arr[2]
+          nic.connection = arr[3]
+        } catch (err) {
+          const e = new Error('No Wifi Device')
+          return callback(e)
+        }
+        callback(null, nic)
+      }
+    })
+  }
+
   connect(...args) {
     this.state.connect(...args)
   }

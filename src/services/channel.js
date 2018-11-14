@@ -84,6 +84,9 @@ class Connecting extends State {
     this.connection.publish(...args)
   }
 
+  connect() {}
+  
+
 }
 
 class Connected extends State {
@@ -105,6 +108,9 @@ class Connected extends State {
     this.state.subscribe(...args)
   }
 
+  connect() {}
+  
+
   exit(){
     this.connection.removeAllListeners()
     this.connection.on('error', () => {})
@@ -119,6 +125,14 @@ class Failed extends State {
     console.log('Failed: ', error)
     this.error = error
     this.timer = setTimeout(() => this.setState('Connecting'), 5000)
+  }
+
+  exit() {
+    clearTimeout(this.timer)
+  }
+
+  connect() {
+    this.setState('Connecting')
   }
 
   publish() {}
@@ -154,6 +168,10 @@ class Channel extends require('events') {
     } else {
       console.log('miss message: ', data)
     }
+  }
+
+  connect(){
+    this.state.connect()
   }
 
   get status() {

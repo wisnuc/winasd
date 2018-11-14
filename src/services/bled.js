@@ -209,14 +209,14 @@ class Connected extends State {
     const timer = setTimeout(() => {
       this.ctx.removeAllListeners(cmd)
       const e = new Error('ETIMEOUT')
-      cb(e)
+      cb && cb(e)
       this.scheduleing = false
       this.schedule()
     }, 1000)
 
     this.ctx.once(cmd, (data) => {
       clearTimeout(timer)
-      cb(null, data.slice(4, data.length))
+      cb && cb(null, data.slice(4, data.length))
       this.scheduleing = false
       this.schedule()
     })
