@@ -84,10 +84,10 @@ class Connecting extends State {
         this.setState('Disconnected', error || stderr)
       } else {
         let interfaces = os.networkInterfaces()
-        let interface = interfaces[this.ctx.device]
-        if (Array.isArray(interface) && interface.length === 2) {
-          let addr = interface[0].address
-          cb(null, { ip })
+        let inter= interfaces[this.ctx.device]
+        if (Array.isArray(inter) && inter.length === 2) {
+          let addr = inter[0].address
+          cb(null, { addr })
           this.setState('Connected')
         } else {
           cb(error || stderr)
