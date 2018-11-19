@@ -67,6 +67,9 @@ class Starting extends State {
   enter () {
     super.enter()
 
+    if (!process.argv.includes('--useWinas')) {
+      return
+    }
     const opts = {
       cwd: this.ctx.winasDir,
 
@@ -196,8 +199,7 @@ class Winas extends EventEmitter {
     // mutual exclusive
     this.startCbs = []
     this.stopCbs = []
-    if (process.argv.includes('--useWinas'))
-      new Starting(this)
+    new Starting(this)
   }
 
   get users() {
@@ -283,7 +285,7 @@ class Winas extends EventEmitter {
       return
     }
     if(!this.state.winas) 
-      return console.log(`[WINAS]warning : winas in ${ this.state.constructor.name } state`)
+      return console.log(`[WINAS]warning : winas in ${ this.state.constructor.name } state`, message)
     debug('*******Send To Winas*******\n', message)
     this.state.winas.send && this.state.winas.send(message)
   }
