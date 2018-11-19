@@ -4,6 +4,7 @@ const readline = require('readline')
 const BaseState = require('../lib/state')
 const debug = require('debug')('ws:net')
 const { networkInterface } = require('../lib/device')
+const os = require('os')
 
 class State extends BaseState{
     exit() {
@@ -82,22 +83,16 @@ class Connecting extends State {
         cb(error || stderr)
         this.setState('Disconnected', error || stderr)
       } else {
-        this.child_ifconf = exec(`ifconfig ${this.ctx.device} | grep inet`, (err, stdo, stde) => {
-          if (err || stde) {
-            cb(error || stderr)
-            this.setState('Disconnected', err || stde)
-          } else {
-            let ip
-            try {
-              ip = stdo.toString().split('\n')[0].trim().split(' ').filter(x => !!x.trim())[1].split(':').pop().trim()
-            } catch(e) {
-              cb(error || stderr)
-              return this.setState('Connected')
-            }
-            cb(null, { ip })
-            this.setState('Connected')
-          }
-        })
+        let interfaces = os.networkInterfaces()
+        let interface = interfaces[this.ctx.device]
+        if (Array.isArray(interface) && interface.length === 2) {
+          let addr = interface[0].address
+          cb(null, { ip })
+          this.setState('Connected')
+        } else {
+          cb(error || stderr)
+          return this.setState('Disconnected')
+        }
       }
     })
   }

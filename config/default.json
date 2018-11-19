@@ -1,14 +1,56 @@
 {
   "iot": {
-
+    "endpoint": "a3dc7azfqxif0n.iot.cn-north-1.amazonaws.com.cn",
+    "region": "cn-north-1"
   },
   "upgrade": {
-
+    "address": "https://wisnuc-upgrade.s3.cn-north-1.amazonaws.com.cn",
+    "fetch": {
+      "beta": "https://wisnuc-upgrade.s3.cn-north-1.amazonaws.com.cn?list-type=2&prefix=beta/abel/&delimiter=/&max-keys=10000",
+      "release": "https://wisnuc-upgrade.s3.cn-north-1.amazonaws.com.cn?list-type=2&prefix=release/abel/&delimiter=/&max-keys=10000"
+    },
+    "version": "/etc/version"
   },
   "storage": {
-
+    "uuids": {
+      "p": "0cbc36fa-3b85-40af-946e-f15dce29d86b",
+      "a": "689b853f-3749-4055-8359-054bd6e806b4",
+      "b": "9bec42be-c362-4de0-9248-b198562ccd40",
+      "d": "82db3f5a-d531-4bc9-8854-9431edbdd0b5"
+    },
+    "roots": {
+      "p": "/mnt/persistent",
+      "a": "",
+      "b": "",
+      "winas": "/winas",
+      "tmp": ""
+    },
+    "dirs": {
+      "certDir": "/mnt/persistent/certificate",
+      "tmpDir": "/mnt/persistent/tmp",
+      "isoDir": "/mnt/persistent/iso",
+      "bleDir": "/mnt/persistent/ble",
+      "winasDir": "/winas",
+      "bound": "/mnt/persistent/bound"
+    },
+    "files": {
+      "csr": "device.csr",
+      "cert": "device.cert",
+      "caCert": "awsCA.pem",
+      "provision": "provisioned",
+      "boundUser": "boundUser.json"
+    }
   },
   "provision": {
-
+    "address": "http://192.168.31.206:8080"
+  },
+  "ble": {
+    "port": "/dev/ttyACM0",
+    "baudRate": 115200,
+    "bin": "/ble.bin"
+  },
+  "system": {
+    "globalNode": true,
+    "useFake": true
   }
 }

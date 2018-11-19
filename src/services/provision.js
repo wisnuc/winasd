@@ -52,7 +52,8 @@ WE9gyn6CagsCqiUXObXbf+eEZSqVir2G3l6BFoMtEMze/aiCKm0oHw0LxOXnGiYZ
 hnacRHr2lVz2XTIIM6RUthg/aFzyQkqFOFSDX9HoLPKsEdao7WNq
 -----END CERTIFICATE-----`
 
-const deviceSN = () => UUID.v4()
+// For test environment
+const deviceSN = () => process.env.NODE_ENV === 'test' ? 'test_' + UUID.v4().slice(5) : UUID.v4()
 
 class Failed extends State {
   enter(err) {
