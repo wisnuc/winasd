@@ -97,7 +97,7 @@ class AppService {
       data: this.userStore.data
     })
 
-    this.bled.setStationStatus(this.userStore.data ? 1: 0, () => {})
+    this.bled.setStationStatus(this.userStore.data ? 2: 1, () => {})
   }
 
   /**
