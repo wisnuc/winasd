@@ -83,16 +83,19 @@ class Connecting extends State {
         cb(error || stderr)
         this.setState('Disconnected', error || stderr)
       } else {
-        let interfaces = os.networkInterfaces()
-        let inter= interfaces[this.ctx.device]
-        if (Array.isArray(inter) && inter.length === 2) {
-          let addr = inter[0].address
-          cb(null, { addr })
-          this.setState('Connected')
-        } else {
-          cb(error || stderr)
-          return this.setState('Disconnected')
-        }
+        // fix ifconfig error
+        setTimeout(() => {
+          let interfaces = os.networkInterfaces()
+          let inter= interfaces[this.ctx.device]
+          if (Array.isArray(inter) && inter.length === 2) {
+            let addr = inter[0].address
+            cb(null, { addr })
+            this.setState('Connected')
+          } else {
+            cb(error || stderr)
+            return this.setState('Disconnected')
+          }
+        }, 500)
       }
     })
   }
