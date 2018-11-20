@@ -42,7 +42,7 @@
     }
   },
   "provision": {
-    "address": "http://192.168.31.206:8080"
+    "address": "http://10.10.9.148:8080"
   },
   "ble": {
     "port": "/dev/ttyACM0",
@@ -52,5 +52,8 @@
   "system": {
     "globalNode": true,
     "useFake": true
+  },
+  "pipe": {
+    "baseURL": "https://abel.nodetribe.com"
   }
 }

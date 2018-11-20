@@ -19,7 +19,7 @@ module.exports = (encrypted, token, callback) => {
     return callback(e)
   }
 
-  request.post('https://abel.nodetribe.com/s/v1/station/bind')
+  request.post(`${ Config.pipe.baseURL }/s/v1/station/bind`)
     .send({ signature, encrypted })
     .set('Authorization', token)
     .then(res => {
