@@ -45,7 +45,9 @@ class AppService {
 
     try {
       this.deviceSN = fs.readFileSync(path.join(Config.storage.dirs.certDir, 'deviceSN')).toString().trim()
-    } catch(e) { throw e }
+    } catch(e) { 
+      console.log('no deviceSN')
+    }
 
     this.upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
 
