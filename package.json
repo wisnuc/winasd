@@ -8,7 +8,7 @@
     "dev": "DEBUG='ws*' NODE_ENV=develop node src/app.js",
     "dev_useWinas": "DEBUG='ws*' NODE_ENV=develop WINAS_ENV=winas node src/app.js --useWinas --standalone",
     "dev_useDevWinas": "DEBUG='ws*' NODE_ENV=develop WINAS_ENV=dev_winas node src/app.js --useWinas --standalone",
-    "dev_testWinas": "DEBUG='ws*' NODE_ENV=develop WINAS_ENV=test_winas node src/app.js --useWinas --standalone"
+    "dev_testWinas": "DEBUG='ws*' NODE_ENV=test WINAS_ENV=test_winas node src/app.js --useWinas --standalone"
   },
   "author": "",
   "license": "ISC",
