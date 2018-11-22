@@ -15,12 +15,12 @@ const caName = storageConf.files.caCert
 class Connecting extends State {
   enter (callback) {
     let connectFunc = this.ctx.useFake ? this.fakeConnect.bind(this) : this.realConnect.bind(this)
-    connectFunc((err, connection, token) => {
+    connectFunc((err, connection, token, user) => {
       if (err) {
         callback && callback(err)
         return this.setState('Failed', err)
       }
-      this.setState('Connected', connection, token)
+      this.setState('Connected', connection, token, user)
     })
   }
 
