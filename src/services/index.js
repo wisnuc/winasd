@@ -84,6 +84,10 @@ class AppService {
     })
   }
 
+  updateDeviceOwner(user, callback) {
+    this.userStore.save(user, callback)
+  }
+
   handleWinasStarted() {
     this.winas.sendMessage({
       type: 'token',
@@ -237,7 +241,11 @@ class AppService {
       return reqBind(encrypted, this.token, (err, data) => {
         if (err) return callback(err)
         let user = data.data
-        this.userStore.save(user, err => {
+        this.updateDeviceOwner({
+          id: user.id,
+          username: user.username,
+          phone: username.phoneNumber
+        }, err => {
           callback(null, user)
         })
       })

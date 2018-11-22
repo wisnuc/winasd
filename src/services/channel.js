@@ -25,7 +25,7 @@ class Connecting extends State {
   }
 
   fakeConnect(callback) {
-    let timer, token, device, finished = false
+    let timer, token, user, device, finished = false
     let cb = (err) => {
       clearTimeout(timer)
       if (finished) return
@@ -38,7 +38,7 @@ class Connecting extends State {
         device && device.end()
         device = undefined
       }
-      callback(err, device, token)
+      callback(err, device, token, user)
     }
 
     timer = setTimeout(() => {
@@ -65,7 +65,14 @@ class Connecting extends State {
     device.on('error', cb)
     device.on('message', (topic, payload) => {
       if (topic === `cloud/${ this.ctx.sn }/connected`) {
-        token = JSON.parse(payload.toString()).token
+        let msg
+        try {
+          msg = JSON.parse(payload.toString())
+        } catch(e) {
+          return cb(e)
+        }
+        token = msg.token
+        user = msg.user
         cb()
       }
     })
@@ -90,8 +97,14 @@ class Connecting extends State {
 }
 
 class Connected extends State {
-  enter (connection, token) {
+  enter (connection, token, user) {
     this.ctx.ctx.token = token
+    this.user = user.owner ? {
+      id: user.owner,
+      username: user.username,
+      phone: user.phoneNumber
+    } : null
+    this.ctx.ctx.updateDeviceOwner(this.user, () => {})
     this.connection = connection
     this.connection.on('message', this.ctx.handleIotMsg.bind(this.ctx))
     this.connection.on('close', () => this.setState('Failed', new Error('close')))
