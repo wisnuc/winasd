@@ -72,7 +72,7 @@ class Connecting extends State {
           return cb(e)
         }
         token = msg.token
-        user = msg.user
+        user = msg.device
         cb()
       }
     })
