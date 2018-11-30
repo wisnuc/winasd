@@ -44,7 +44,7 @@ const TMPFILE = () => {
 
 const setDeviceName = (name, callback) => {
   let tmpfile = TMPFILE()
-  let name = name && name.length ? name : 'Winas'
+  name = name && name.length ? name : 'Winas'
   fs.writeFile(tmpfile, name, err => {
     if (err) return callback(err)
     fs.rename(tmpfile, deviceNameP, err => 
