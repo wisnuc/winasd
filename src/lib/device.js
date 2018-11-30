@@ -7,7 +7,7 @@ const child = require('child_process')
 const Config = require('config')
 const UUID = require('uuid')
 
-const deviceNameP = path.join(Config.storage.roots.p, Config.storage.dirs.device, Config.storage.files.deviceName)
+const deviceNameP = path.join(Config.storage.dirs.device, Config.storage.files.deviceName)
 
 const networkInterface = () => {
   let interfaces = os.networkInterfaces()
@@ -68,13 +68,13 @@ const hardwareInfo = () => {
 }
 
 const deviceSN = () => {
-  this.deviceSN 
+  deviceSN 
   try {
     deviceSN = fs.readFileSync(path.join(Config.storage.dirs.certDir, 'deviceSN')).toString().trim()
   } catch(e){
     console.log('*****\ndeviceSN not found\n*****\n')
   }
-  return deviceName
+  return deviceSN
 }
 
 module.exports = {
