@@ -236,7 +236,8 @@ class AppService {
   }
 
   updateDeviceName (user, name, callback) {
-    Device.setDeviceName(name, callback)
+    Device.setDeviceName(name, (err, data) => (callback(err, data), this.deviceUpdate()))
+
   }
 
   deviceUpdate () {
