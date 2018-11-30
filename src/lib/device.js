@@ -68,7 +68,7 @@ const hardwareInfo = () => {
 }
 
 const deviceSN = () => {
-  deviceSN 
+  let deviceSN 
   try {
     deviceSN = fs.readFileSync(path.join(Config.storage.dirs.certDir, 'deviceSN')).toString().trim()
   } catch(e){
