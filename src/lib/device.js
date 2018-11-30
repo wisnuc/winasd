@@ -62,7 +62,8 @@ const hardwareInfo = () => {
     signer: 'Wisnuc Inc.',
     notBefore: 1543561560133,
     notAfter: 1859180920786,
-    bleAddr: 'XXXX:XXXX:XXXX:XXX'
+    bleAddr: 'XXXX:XXXX:XXXX:XXX',
+    name: deviceName()
   }
 }
 
