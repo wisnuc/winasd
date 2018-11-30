@@ -39,7 +39,7 @@ const deviceName = () => {
 }
 
 const TMPFILE = () => {
-  return path.join(Config.storage.roots.p, Config.storage.roots.dirs.tmp, UUID.v4())
+  return path.join(Config.storage.dirs.tmp, UUID.v4())
 }
 
 const setDeviceName = (name, callback) => {
