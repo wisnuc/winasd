@@ -1,6 +1,6 @@
 const Router = require('express').Router
 
-module.exports = (service) =>{
+module.exports = (appService) =>{
   const router = new Router()
   router.get('/info', (req, res, next) => {
     res.success(appService.view())
@@ -9,7 +9,7 @@ module.exports = (service) =>{
   
   router.post('/device', (req, res, next) => {
     let { name } = req.body
-    service.updateDeviceName(req.user, name, err => 
+    appService.updateDeviceName(req.user, name, err => 
       err ? res.error(err) : res.success())
   })
 
