@@ -15,6 +15,7 @@ const Provision = require('./provision')
 const Winas = require('./winas')
 const Channel = require('./channel')
 const reqBind = require('../lib/bind')
+const Device = require('../lib/device')
 
 class AppService {
   constructor() {
@@ -31,6 +32,7 @@ class AppService {
       mkdirp.sync(Config.storage.dirs.isoDir)
       mkdirp.sync(Config.storage.dirs.certDir)
       mkdirp.sync(Config.storage.dirs.bound)
+      mkdirp.sync(Config.storage.dirs.device)
     } catch(e) {
       console.log(e)
     }
@@ -225,14 +227,23 @@ class AppService {
       winas: this.winas && this.winas.view(),
       provision: this.provision && this.provision.view(),
       channel: this.channel && this.channel.view(),
-      device: {
-        sn: this.deviceSN
-      }
+      device: Device.hardwareInfo()
     }
   }
 
   destroy() {
     if (this.winas) this.winas.destroy()
+  }
+
+  updateDeviceName (user, name, callback) {
+    Device.setDeviceName(name, callback)
+  }
+
+  deviceUpdate () {
+    this.channel && this.deviceSN && this.channel.publish(`device/${ this.deviceSN }/info`, JSON.stringify({ 
+      lanIp: Device.networkInterface().address,
+      name: Device.deviceName()
+    }))
   }
 
   boundDevice(encrypted, callback) {
@@ -246,7 +257,7 @@ class AppService {
           username: user.username,
           phone: username.phoneNumber
         }, err => {
-          callback(null, user)
+          callback(err, user)
         })
       })
     }

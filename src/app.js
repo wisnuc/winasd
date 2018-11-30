@@ -25,9 +25,8 @@ app.post('/bind', (req, res, next) => {
   })
 })
 
-app.get('/info', (req, res, next) => {
-  res.success(appService.view())
-})
+app.get('/info', (req, res, next) => res.success(appService.view()))
+app.use('/winasd', require('./routes/winasd')(appService))
 
 // 404 handler
 app.use((req, res, next) => next(Object.assign(new Error('404 Not Found'), { status: 404 })))

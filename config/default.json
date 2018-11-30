@@ -31,14 +31,16 @@
       "isoDir": "/mnt/persistent/iso",
       "bleDir": "/mnt/persistent/ble",
       "winasDir": "/winas",
-      "bound": "/mnt/persistent/bound"
+      "bound": "/mnt/persistent/bound",
+      "device": "/mnt/persistent/device"
     },
     "files": {
       "csr": "device.csr",
       "cert": "device.cert",
       "caCert": "awsCA.pem",
       "provision": "provisioned",
-      "boundUser": "boundUser.json"
+      "boundUser": "boundUser.json",
+      "deviceName": "deviceName"
     }
   },
   "provision": {

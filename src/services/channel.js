@@ -3,7 +3,7 @@ const fs = require('fs')
 const path = require('path')
 const Config = require('config')
 const State = require('../lib/state')
-const { networkInterface } = require('../lib/device')
+const { networkInterface, deviceName } = require('../lib/device')
 
 const storageConf = Config.get('storage')
 const IOTConf = Config.get('iot')
@@ -11,6 +11,21 @@ const certFolder = storageConf.dirs.certDir
 const crtName = storageConf.files.cert
 const pkeyName = 'device.key'
 const caName = storageConf.files.caCert
+
+const getURL = (stationId, jobId) => `${Config.pipe.baseURL}/s/v1/station/${stationId}/response/${jobId}`
+
+const formatError = (error, status) => {
+  status = status || 403
+  let formatError
+  if (error instanceof Error) {
+    formatError = error
+    formatError.status = error.status ? error.status : status
+  } else if (typeof err === 'string') {
+    formatError = new Error(error)
+    formatError.status = status
+  }
+  return formatError
+}
 
 class Connecting extends State {
   enter (callback) {
@@ -60,7 +75,10 @@ class Connecting extends State {
 
     device.on('connect', () => {
       device.subscribe(`cloud/${ this.ctx.sn }/connected`)
-      device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ lanIp: networkInterface().address }))
+      device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ 
+        lanIp: networkInterface().address,
+        name: deviceName()
+      }))
     })
     device.on('error', cb)
     device.on('message', (topic, payload) => {
@@ -83,13 +101,9 @@ class Connecting extends State {
 
   }
 
-  publish(...args) {
-    this.connection.publish(...args)
-  }
+  publish(...args) {}
 
-  subscribe(...args) {
-    this.connection.publish(...args)
-  }
+  subscribe(...args) {}
 
   connect() {}
   
@@ -114,11 +128,11 @@ class Connected extends State {
   }
 
   publish(...args) {
-    this.state.publish(...args)
+    this.connection.publish(...args)
   }
 
   subscribe(...args) {
-    this.state.subscribe(...args)
+    this.connection.subscribe(...args)
   }
 
   connect() {}
@@ -174,13 +188,61 @@ class Channel extends require('events') {
       return console.log('MQTT PAYLOAD FORMATE ERROR')
     }
     if (topic.endsWith('pipe')) {
-      this.ctx.winas.sendMessage({ 
-        type: 'pipe',
-        data
-      })
+      if (data.urlPath.startsWith('/winasd')) {
+        let { urlPath, verb, body, params, headers } = data
+        let bodym = Object.assign({}, body, params)
+        if (urlPath === '/winasd/info') {
+          return this.reqCommand(data, null, this.ctx.view())
+        }
+        else if (urlPath === '/winasd/device') {
+          return this.ctx.updateDeviceName(req.user, name, err => 
+            this.reqCommand(message, err, {}))
+        } else {
+          return this.reqCommand(message, formatError('not found'))
+        }
+      } else
+        this.ctx.winas.sendMessage({ type: 'pipe', data })
     } else {
       console.log('miss message: ', data)
     }
+  }
+
+  reqCommand (message, error, res, isFetch, isStore) {
+    let resErr
+    if (error) {
+      error = formatError(error)
+      resErr = error
+    }
+
+    let uri = getURL(this.sn, message.sessionId, false)
+    if (isFetch) uri += '/pipe/fetch'
+    else if (isStore) uri += '/pipe/store'
+    else uri += '/json'
+    debug(uri)
+    return request({
+      uri: uri,
+      method: 'POST',
+      headers: { 
+        Authorization: this.ctx.token,
+        'Cookie': message.headers['cookie']
+      },
+      body: true,
+      json: {
+        error : resErr,
+        data: res
+      }
+    }, (error, response, body) => {
+      if (error) return debug('reqCommand error: ', error)
+      debug('reqCommand success:',response.statusCode)
+    })
+  }
+
+  publish(...args) {
+    this.state.publish(...args)
+  }
+
+  subscribe(...args) {
+    this.state.subscribe(...args)
   }
 
   connect(){

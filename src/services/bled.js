@@ -354,7 +354,8 @@ class Bled extends EventEmitter {
 
   view() {
     return {
-      state: this.state.constructor.name
+      state: this.state.constructor.name,
+      address: 'XXXXX:XXXX:XXXX:XXXXX'
     }
   }
 
