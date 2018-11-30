@@ -7,7 +7,7 @@ const child = require('child_process')
 const Config = require('config')
 const UUID = require('uuid')
 
-const deviceNameP = path.join(Config.storage.roots.p, Config.storage.roots.dirs.device, Config.storage.roots.files.deviceName)
+const deviceNameP = path.join(Config.storage.roots.p, Config.storage.dirs.device, Config.storage.files.deviceName)
 
 const networkInterface = () => {
   let interfaces = os.networkInterfaces()
