@@ -197,7 +197,7 @@ class Channel extends require('events') {
           return this.reqCommand(data, null, this.ctx.view())
         }
         else if (urlPath === '/winasd/device') {
-          return this.ctx.updateDeviceName(null, name, err => 
+          return this.ctx.updateDeviceName(null, bodym.name, err => 
             this.reqCommand(message, err, {}))
         } else {
           return this.reqCommand(message, formatError('not found'))
