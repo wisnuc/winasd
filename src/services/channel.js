@@ -4,6 +4,8 @@ const path = require('path')
 const Config = require('config')
 const State = require('../lib/state')
 const { networkInterface, deviceName } = require('../lib/device')
+const debug = require('debug')('ws:channel')
+const request = require('request')
 
 const storageConf = Config.get('storage')
 const IOTConf = Config.get('iot')
