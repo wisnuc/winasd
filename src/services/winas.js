@@ -284,7 +284,7 @@ class Winas extends EventEmitter {
       console.log('[WINAS]warning :', error, message)
       return
     }
-    if(!this.state.winas) 
+    if(this.getState() !== 'Started') 
       return console.log(`[WINAS]warning : winas in ${ this.state.constructor.name } state`, message)
     debug('*******Send To Winas*******\n', message)
     this.state.winas.send && this.state.winas.send(message)
