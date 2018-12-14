@@ -127,6 +127,7 @@ class Connected extends State {
     this.connection.on('error', err => this.setState('Failed', err))
     this.connection.on('offline', () => this.setState('Failed', new Error('offline')))
     this.connection.subscribe(`cloud/${ this.ctx.sn }/pipe`)
+    this.connection.subscribe(`cloud/${ this.ctx.sn }/users`)
   }
 
   publish(...args) {
@@ -204,7 +205,9 @@ class Channel extends require('events') {
         }
       } else
         this.ctx.winas.sendMessage({ type: 'pipe', data })
-    } else {
+    } else if (topic.endsWith('users')) {
+      this.ctx.winas.sendMessage({ type: 'userUpdate', data})
+    }else {
       console.log('miss message: ', data)
     }
   }
