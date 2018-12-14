@@ -183,6 +183,23 @@ class Channel extends require('events') {
     new Connecting(this)
   }
 
+  checkMessage (message) {
+    if (!message) throw formatError(new Error('pipe have no message'), 400)
+
+    if (!message.sessionId) {
+      throw formatError(new Error(`message have no msgId`), 400)
+    }
+    if (!message.user || !message.user.id) {
+      throw formatError(new Error(`this msgId: message have no user`), 400)
+    }
+    if (!message.verb) {
+      throw formatError(new Error(`this msgId: data have no verb`), 400)
+    }
+    if (!message.urlPath) {
+      throw formatError(new Error(`this msgId: data have no urlPath`), 400)
+    }
+  }
+
   handleIotMsg(topic, payload) {
     let data 
     try {
@@ -191,6 +208,11 @@ class Channel extends require('events') {
       return console.log('MQTT PAYLOAD FORMATE ERROR')
     }
     if (topic.endsWith('pipe')) {
+      try{
+        this.checkMessage(data)
+      } catch(e) {
+        return this.reqCommand(data, e)
+      }
       if (data.urlPath.startsWith('/winasd')) {
         let { urlPath, verb, body, params, headers } = data
         let bodym = Object.assign({}, body, params)
