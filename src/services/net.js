@@ -89,7 +89,7 @@ class Connecting extends State {
           let inter= interfaces[this.ctx.device]
           if (Array.isArray(inter) && inter.length === 2) {
             let addr = inter[0].address
-            cb(null, { addr })
+            cb(null, { ip: addr })
             this.setState('Connected')
           } else {
             cb(error || stderr)

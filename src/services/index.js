@@ -9,7 +9,7 @@ const debug = require('debug')('ws:app')
 const DataStore = require('../lib/DataStore')
 
 const Upgrade = require('./upgrade')
-const Bled = require('./bled')
+const Bled = require('./BLED')
 const Net = require('./net')
 const Provision = require('./provision')
 const Winas = require('./winas')
@@ -101,11 +101,11 @@ class AppService {
 
   handleBoundUserUpdate() {
     this.userStore.data && this.winas.sendMessage({
-      type:"boundUser",
+      type: 'boundUser',
       data: this.userStore.data
     })
 
-    this.bled.setStationStatus(this.userStore.data ? 2: 1, () => {})
+    this.bled.setStationStatus(this.userStore.data ? 2: 1)
   }
 
   /**
@@ -161,17 +161,17 @@ class AppService {
       })
     })
 
-    this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
+    this.bled = new Bled()
     this.bled.addHandler('CMD_SCAN', packet => {
       // console.log(packet)
       this.net.scan((err, list) => {
-        this.bled.sendMsg(err || list, e => e && console.error('send message via SPS error', e))
+        this.bled.update(err || list)
       })
     })
     this.bled.addHandler('CMD_CONN', packet => {
       // console.log('CMD_CONN', packet)
-      net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
-        this.bled.sendMsg(err || res, e => e && console.error('send message via SPS error', e))
+      this.net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
+        this.bled.update(err || res)
       })
     })
   }
@@ -186,29 +186,29 @@ class AppService {
     this.bled.addHandler('CMD_SCAN', packet => {
       console.log('CMD_SCAN', packet)
       this.net.scan((err, list) => {
-        this.bled.sendMsg(err ? { error: err} : { data: list}, e => e && console.error('send message via SPS error', e))
+        this.bled.update(err ? { error: err} : { data: list})
       })
     })
     this.bled.addHandler('CMD_CONN', packet => {
       console.log('CMD_CONN', packet)
       this.net.connect(packet.ssid, packet.password, (err, res) => {
-        this.bled.sendMsg(err ? { error: err} : { data: res}, e => e && console.error('send message via SPS error', e))
+        this.bled.update(err ? { error: err} : { data: res})
       })
     })
 
     this.bled.addHandler('CMD_NET', packet => {
       console.log('CMD_NET', packet)
       this.net.netInfo((err, res) => {
-        this.bled.sendMsg(err ? { error: err} : { data: res }, e => e && console.error('send message via SPS error', e))
+        this.bled.update(err ? { error: err} : { data: res })
       })
     })
 
     this.bled.on('Connected', () => {
       if (this.deviceSN) { // update sn
-        this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)), () => {})
+        this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)))
       }
       // update status
-      this.bled.setStationStatus(this.userStore.data ? 2: 1, () => {})
+      this.bled.setStationStatus(this.userStore.data ? 2: 1)
     })
     this.winas = new Winas(this)
     this.channel = new Channel(this)

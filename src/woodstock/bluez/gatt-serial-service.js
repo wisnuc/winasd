@@ -53,13 +53,6 @@ class GattSerialService extends DBusObject {
 
     this.listener = this.listen.bind(this)
 
-    this.count = 0
-
-    setInterval(() => {
-      let val = Buffer.alloc(4)
-      val.writeUInt32LE(this.count++)
-      this.rxIface.update(val)
-    }, 500)
   }
 
   register () {

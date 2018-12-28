@@ -23,11 +23,13 @@ module.exports = () => {
   bluetooth.addChild(adv)
 
   let service0 = new GattSerialService('service0', true)
-  service0.on('WriteValue', console.log)
+  service0.on('WriteValue', (...args) => bluetooth.emit('WriteValue', ...args))
+  bluetooth.update = service0.rxIface.update.bind(service0.rxIface)
+
   // gatt root
   let gatt = new DBusObject('gatt')
-    .addInterface(new DBusObjectManager(service0))
-    .addChild()
+    .addInterface(new DBusObjectManager())
+    .addChild(service0)
 
   bluetooth.addChild(gatt)
 
