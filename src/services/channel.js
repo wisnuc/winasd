@@ -108,8 +108,6 @@ class Connecting extends State {
   subscribe(...args) {}
 
   connect() {}
-  
-
 }
 
 class Connected extends State {
@@ -128,6 +126,10 @@ class Connected extends State {
     this.connection.on('offline', () => this.setState('Failed', new Error('offline')))
     this.connection.subscribe(`cloud/${ this.ctx.sn }/pipe`)
     this.connection.subscribe(`cloud/${ this.ctx.sn }/users`)
+    this.connection.subscribe(`cloud/${ this.ctx.sn }/token`)
+    this.timer = setInterval(() => {
+      this.publish(`device/${ this.ctx.sn }/info`, '') // refresh token
+    }, 1000 * 60 * 60 * 24)
   }
 
   publish(...args) {
@@ -147,6 +149,7 @@ class Connected extends State {
     this.connection.end()
     this.connection = undefined
     this.ctx.ctx.token = undefined
+    clearInterval(this.timer)
   }
 }
 
@@ -154,7 +157,7 @@ class Failed extends State {
   enter(error) {
     console.log('Failed: ', error)
     this.error = error
-    this.timer = setTimeout(() => this.setState('Connecting'), 5000)
+    this.timer = setTimeout(() => this.setState('Connecting'), 1000 * 10)
   }
 
   exit() {
@@ -229,7 +232,9 @@ class Channel extends require('events') {
         this.ctx.winas.sendMessage({ type: 'pipe', data })
     } else if (topic.endsWith('users')) {
       this.ctx.winas.sendMessage({ type: 'userUpdate', data})
-    }else {
+    } else if (topic.endsWith('token')){
+      this.ctx.token = data.token
+    } else {
       console.log('miss message: ', data)
     }
   }

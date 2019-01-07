@@ -29,9 +29,10 @@ class BLED extends require('events') {
       return this.update({ code: 'ENOTJSON', message: 'packet error'})
     }
 
-    if (packet.action === 'scan') this.dispatch('CMD_SCAN', packet)
-    if (packet.action === 'conn') this.dispatch('CMD_CONN', packet)
-    if (packet.action === 'net') this.dispatch('CMD_NET', packet)
+    if (packet.action === 'scan') return this.dispatch('CMD_SCAN', packet)
+    if (packet.action === 'conn') return this.dispatch('CMD_CONN', packet)
+    if (packet.action === 'net') return this.dispatch('CMD_NET', packet)
+    console.log('invalid action: ', packet.action)
   }
 
   addHandler(type, callback){
