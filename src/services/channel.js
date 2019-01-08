@@ -128,7 +128,7 @@ class Connected extends State {
     this.connection.subscribe(`cloud/${ this.ctx.sn }/users`)
     this.connection.subscribe(`cloud/${ this.ctx.sn }/token`)
     this.timer = setInterval(() => {
-      this.publish(`device/${ this.ctx.sn }/info`, '') // refresh token
+      this.publish(`device/${ this.ctx.sn }/token`, '') // refresh token
     }, 1000 * 60 * 60 * 24)
   }
 
@@ -235,7 +235,7 @@ class Channel extends require('events') {
     } else if (topic.endsWith('token')){
       this.ctx.token = data.token
     } else {
-      console.log('miss message: ', data)
+      console.log('miss message: ', topic, data)
     }
   }
 
