@@ -1,0 +1,6 @@
+{
+  "type": "ws215i",
+  "pipe": {
+    "baseURL": "https://test.nodetribe.com"
+  }
+}
