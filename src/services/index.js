@@ -25,6 +25,7 @@ class AppService {
       child.execSync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
     } catch(e) {
       console.log(e.message)
+      console.log('skip mount, mkdir dir in rootfs')
     }
     try {
       rimraf.sync(Config.storage.dirs.tmpDir)
@@ -37,13 +38,13 @@ class AppService {
       console.log(e)
     }
 
-    this.userStore = new DataStore({
-      isArray: false,
-      file: path.join(Config.storage.dirs.bound, Config.storage.files.boundUser),
+    this.deviceUsers = new DataStore({
+      isArray: true,
+      file: path.join(Config.storage.dirs.bound, Config.storage.files.serveUsers),
       tmpDir: path.join(Config.storage.dirs.tmpDir)
     })
 
-    this.userStore.on('Update', this.handleBoundUserUpdate.bind(this))
+    this.deviceUsers.on('Update', this.handleDeviceUsersUpdate.bind(this))
 
     try {
       this.deviceSN = fs.readFileSync(path.join(Config.storage.dirs.certDir, 'deviceSN')).toString().trim()
@@ -86,8 +87,8 @@ class AppService {
     })
   }
 
-  updateDeviceOwner(user, callback) {
-    this.userStore.save(user, callback)
+  updateDeviceUsers(users, callback) {
+    this.deviceUsers.save(users, callback)
   }
 
   handleWinasStarted() {
@@ -96,16 +97,14 @@ class AppService {
       data: this.token
     })
 
-    this.handleBoundUserUpdate()
+    this.handleDeviceUsersUpdate()
   }
 
-  handleBoundUserUpdate() {
-    this.userStore.data && this.winas.sendMessage({
-      type: 'boundUser',
-      data: this.userStore.data
+  handleDeviceUsersUpdate() {
+    this.serveUsers.data && this.winas.sendMessage({
+      type: 'deviceUsers',
+      data: this.serveUsers.data
     })
-
-    this.bled.setStationStatus(this.userStore.data ? 2: 1)
   }
 
   /**
@@ -208,7 +207,7 @@ class AppService {
         this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)))
       }
       // update status
-      this.bled.setStationStatus(this.userStore.data ? 2: 1)
+      this.bled.setStationStatus(this.deviceUsers.data ? 2: 1)
     })
     this.winas = new Winas(this)
     this.channel = new Channel(this)
@@ -237,7 +236,6 @@ class AppService {
 
   updateDeviceName (user, name, callback) {
     Device.setDeviceName(name, (err, data) => (callback(err, data), this.deviceUpdate()))
-
   }
 
   deviceUpdate () {
@@ -253,11 +251,15 @@ class AppService {
       return reqBind(encrypted, this.token, (err, data) => {
         if (err) return callback(err)
         let user = data.data
-        this.updateDeviceOwner({
+        this.updateDeviceUsers([{
           id: user.id,
           username: user.username,
-          phone: username.phoneNumber
-        }, err => {
+          isOwner: 1,
+          cloud: 1,
+          publicSpace: 1,
+          disable: 0,
+          delete: 0
+        }], err => {
           callback(err, user)
         })
       })

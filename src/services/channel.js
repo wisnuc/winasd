@@ -32,17 +32,17 @@ const formatError = (error, status) => {
 class Connecting extends State {
   enter (callback) {
     let connectFunc = this.ctx.useFake ? this.fakeConnect.bind(this) : this.realConnect.bind(this)
-    connectFunc((err, connection, token, user) => {
+    connectFunc((err, connection, token, info) => {
       if (err) {
         callback && callback(err)
         return this.setState('Failed', err)
       }
-      this.setState('Connected', connection, token, user)
+      this.setState('Connected', connection, token, info)
     })
   }
 
   fakeConnect(callback) {
-    let timer, token, user, device, finished = false
+    let timer, token, info, device, finished = false
     let cb = (err) => {
       clearTimeout(timer)
       if (finished) return
@@ -55,7 +55,7 @@ class Connecting extends State {
         device && device.end()
         device = undefined
       }
-      callback(err, device, token, user)
+      callback(err, device, token, info)
     }
 
     timer = setTimeout(() => {
@@ -92,7 +92,7 @@ class Connecting extends State {
           return cb(e)
         }
         token = msg.token
-        user = msg.device
+        info = msg.device
         cb()
       }
     })
@@ -111,14 +111,10 @@ class Connecting extends State {
 }
 
 class Connected extends State {
-  enter (connection, token, user) {
+  enter (connection, token, device) {
     this.ctx.ctx.token = token
-    this.user = user.owner ? {
-      id: user.owner,
-      username: user.username,
-      phone: user.phoneNumber
-    } : null
-    this.ctx.ctx.updateDeviceOwner(this.user, () => {})
+    this.users = device.owner ? device.users : null
+    this.ctx.ctx.updateDeviceUsers(this.users, () => {})
     this.connection = connection
     this.connection.on('message', this.ctx.handleIotMsg.bind(this.ctx))
     this.connection.on('close', () => this.setState('Failed', new Error('close')))
