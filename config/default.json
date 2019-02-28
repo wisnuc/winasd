@@ -41,7 +41,7 @@
       "caCert": "awsCA.pem",
       "provision": "provisioned",
       "boundUser": "boundUser.json",
-      "serveUsers": "serveUsers.json",
+      "deviceUsers": "deviceUsers.json",
       "deviceName": "deviceName"
     }
   },

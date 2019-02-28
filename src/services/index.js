@@ -40,7 +40,7 @@ class AppService {
 
     this.deviceUsers = new DataStore({
       isArray: true,
-      file: path.join(Config.storage.dirs.bound, Config.storage.files.serveUsers),
+      file: path.join(Config.storage.dirs.bound, Config.storage.files.deviceUsers),
       tmpDir: path.join(Config.storage.dirs.tmpDir)
     })
 
@@ -101,9 +101,9 @@ class AppService {
   }
 
   handleDeviceUsersUpdate() {
-    this.serveUsers.data && this.winas.sendMessage({
+    this.deviceUsers.data && this.winas.sendMessage({
       type: 'deviceUsers',
-      data: this.serveUsers.data
+      data: this.deviceUsers.data
     })
   }
 
