@@ -155,7 +155,7 @@ class Connected extends State {
 
 class Failed extends State {
   enter(error) {
-    console.log('Failed: ', error)
+    // console.log('Failed: ', error)
     this.error = error
     this.timer = setTimeout(() => this.setState('Connecting'), 1000 * 10)
   }

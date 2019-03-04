@@ -1,12 +1,17 @@
 const Bluetooth = require('../woodstock/winas/bluetooth')
 const DBus = require('../woodstock/lib/dbus')
+const NetworkManager = require('../woodstock/nm/networkManager')
 class BLED extends require('events') {
   constructor() {
     super()
     this.dbus = new DBus()
     this.dbus.on('connect', () => {
-      this.ble = Bluetooth()
-      this.dbus.attach('/org/bluez/bluetooth', this.ble)
+      // this.ble = Bluetooth()
+      this.net = new NetworkManager()
+      // this.dbus.attach('/org/bluez/bluetooth', this.ble)
+      this.dbus.attach('/org/freedesktop/NetworkManager', this.net)
+      this.net.getDeviceByIpIface('wlan0')
+      this.net.requestScan()
     })
     this.handlers = new Map()
   }
