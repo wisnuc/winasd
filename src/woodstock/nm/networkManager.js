@@ -15,8 +15,8 @@ class NetworkManager extends DBusObject {
   }
 
   start() {
-    this.net.getDeviceByIpIface('wlan0')
-    this.net.requestScan()
+    this.getDeviceByIpIface('wlan0')
+    this.requestScan()
   }
 
   listen(m) {
