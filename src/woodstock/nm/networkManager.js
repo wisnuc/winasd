@@ -11,7 +11,6 @@ class NetworkManager extends DBusObject {
     this.addInterface(new DBusProperties())
     this.addInterface(new DBusObjectManager())
     this.listener = this.listen.bind(this)
-    this.dbus.driver.on('signal',  m => this.handleSignal(m))
   }
 
   listen(m) {
@@ -23,6 +22,7 @@ class NetworkManager extends DBusObject {
   }
 
   registerSignals() {
+    this.dbus.driver.on('signal',  m => this.handleSignal(m))
     this.dbus.driver.signal({
       path: '/org/freedesktop/NetworkManager/Devices/2',
       interface: 'org.freedesktop.NetworkManager.Device.Wireless',
