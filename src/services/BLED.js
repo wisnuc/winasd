@@ -10,8 +10,6 @@ class BLED extends require('events') {
       this.net = new NetworkManager()
       // this.dbus.attach('/org/bluez/bluetooth', this.ble)
       this.dbus.attach('/org/freedesktop/NetworkManager', this.net)
-      this.net.getDeviceByIpIface('wlan0')
-      this.net.requestScan()
     })
     this.handlers = new Map()
   }

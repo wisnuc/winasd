@@ -1,6 +1,7 @@
 const DBusObject = require('../lib/dbus-object')
 const DBusProperties = require('../lib/dbus-properties')
 const DBusObjectManager = require('../lib/dbus-object-manager')
+const debug = require('debug')('ws:nm')
 const {
   STRING, OBJECT_PATH, ARRAY
 } = require('../lib/dbus-types')
@@ -14,7 +15,8 @@ class NetworkManager extends DBusObject {
   }
 
   start() {
-
+    this.net.getDeviceByIpIface('wlan0')
+    this.net.requestScan()
   }
 
   listen(m) {
@@ -58,6 +60,7 @@ class NetworkManager extends DBusObject {
       path: '/org/freedesktop/NetworkManager'
     }, this.listener)
     this.registerSignals()
+    this.start()
   }
 
   getDeviceByIpIface(iface) {
@@ -77,7 +80,7 @@ class NetworkManager extends DBusObject {
 
   //  dbus-send --system --dest=org.freedesktop.NetworkManager --print-reply /org/freedesktop/NetworkManager/Devices/2 \
   //  org.freedesktop.DBus.Properties.Get string:org.freedesktop.NetworkManager.Device.Wireless string:AccessPoints
-  getAccessPoints() {
+  getAccessPoints(callback) {
     this.dbus.driver.invoke({
       destination: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager/Devices/2',
@@ -89,7 +92,41 @@ class NetworkManager extends DBusObject {
         new STRING('AccessPoints')
       ]
     }, (err, data) => {
-      console.log('getAccessPoints', err, data, JSON.stringify(data, null, '  '))
+      if (err) return callback(err)
+      if (data && data.length == 1 && Array.isArray(data[0].elems) && data[0].elems.length == 2 && Array.isArray(data[0].elems[1].elems)) {
+        let elems = data[0].elems[1].elems
+        let count = elems.length
+        let aps = []
+        if (count) {
+          elems.forEach(x => {
+            this.getAccessPointAllProperties(x.value, (err, data) => {
+              if (data) aps.push(data)
+              if (!--count) {
+                return callback(null, aps)
+              }
+            })
+          })
+        } else {
+          callback(null, [])
+        }
+      } else 
+        callback(null, [])
+    })
+  }
+
+  getAccessPointAllProperties(objpath, callback) {
+    this.dbus.driver.invoke({
+      destination: 'org.freedesktop.NetworkManager',
+      path: objpath,
+      'interface': 'org.freedesktop.DBus.Properties',
+      member: 'GetAll',
+      signature: 's',
+      body: [
+        new STRING('org.freedesktop.NetworkManager.AccessPoint')
+      ]
+    }, (err, data) => {
+      if (err) return callback(err)
+      callback(data)
     })
   }
 
