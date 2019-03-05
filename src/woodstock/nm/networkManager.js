@@ -13,7 +13,34 @@ class NetworkManager extends DBusObject {
     this.listener = this.listen.bind(this)
   }
 
-  listen(m) {}
+  listen(m) {
+    console.log('NetworkManager', m)
+  }
+
+  registerSignals() {
+    this.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager/Devices/2',
+      interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+      member: 'AccessPointAdded',
+      signature: 'o',
+      body: [
+        new OBJECT_PATH(this.objectPath())
+      ]
+    }, (err, data) => {
+      console.log('registerSignals1', err, data)
+      this.dbus.driver.signal({
+        path: '/org/freedesktop/NetworkManager/Devices/2',
+        interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+        member: 'AccessPointRemoved',
+        signature: 'o',
+        body: [
+          new OBJECT_PATH(this.objectPath())
+        ]
+      }, (err, data) => {
+        console.log('registerSignals2', err, data)
+      })
+    })
+  }
 
   mounted() {
     super.mounted()
@@ -21,7 +48,7 @@ class NetworkManager extends DBusObject {
       sender: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager'
     }, this.listener)
-    // this.register()
+    this.registerSignals()
   }
 
   getDeviceByIpIface(iface) {
