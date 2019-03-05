@@ -13,12 +13,19 @@ class NetworkManager extends DBusObject {
     this.listener = this.listen.bind(this)
   }
 
+  start() {
+
+  }
+
   listen(m) {
     console.log('NetworkManager', m)
   }
 
   handleSignal(m) {
-    console.log('handleSignal', m)
+    if (m && m.path === '/org/freedesktop/NetworkManager/Devices/2') {
+      console.log('handleSignal', m)
+      this.getAccessPoints()
+    }
   }
 
   registerSignals() {
@@ -33,7 +40,6 @@ class NetworkManager extends DBusObject {
       ]
     })
 
-    console.log('registerSignals1', err, data)
     this.dbus.driver.signal({
       path: '/org/freedesktop/NetworkManager/Devices/2',
       interface: 'org.freedesktop.NetworkManager.Device.Wireless',
@@ -83,7 +89,7 @@ class NetworkManager extends DBusObject {
         new STRING('AccessPoints')
       ]
     }, (err, data) => {
-      console.log(err, data)
+      console.log('getAccessPoints', err, data)
     })
   }
 
