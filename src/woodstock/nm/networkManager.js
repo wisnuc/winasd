@@ -26,7 +26,7 @@ class NetworkManager extends DBusObject {
   handleSignal(m) {
     if (m && m.path === '/org/freedesktop/NetworkManager/Devices/2' && m.member.startsWith('AccessPoint')) {
       console.log('handleSignal', m)
-      this.getAccessPoints()
+      this.getAccessPoints((err, data) => console.log(err, data))
     }
   }
 
