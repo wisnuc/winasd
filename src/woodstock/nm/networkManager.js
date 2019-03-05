@@ -22,7 +22,7 @@ class NetworkManager extends DBusObject {
   }
 
   handleSignal(m) {
-    if (m && m.path === '/org/freedesktop/NetworkManager/Devices/2') {
+    if (m && m.path === '/org/freedesktop/NetworkManager/Devices/2' && m.member.startsWith('AccessPoint')) {
       console.log('handleSignal', m)
       this.getAccessPoints()
     }
@@ -89,7 +89,7 @@ class NetworkManager extends DBusObject {
         new STRING('AccessPoints')
       ]
     }, (err, data) => {
-      console.log('getAccessPoints', err, data)
+      console.log('getAccessPoints', err, data, JSON.stringify(data, null, '  '))
     })
   }
 
