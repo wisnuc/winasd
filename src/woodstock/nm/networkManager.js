@@ -2,7 +2,7 @@ const DBusObject = require('../lib/dbus-object')
 const DBusProperties = require('../lib/dbus-properties')
 const DBusObjectManager = require('../lib/dbus-object-manager')
 const {
-  STRING, OBJECT_PATH
+  STRING, OBJECT_PATH, ARRAY
 } = require('../lib/dbus-types')
 
 class NetworkManager extends DBusObject {
