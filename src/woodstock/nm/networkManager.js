@@ -11,10 +11,15 @@ class NetworkManager extends DBusObject {
     this.addInterface(new DBusProperties())
     this.addInterface(new DBusObjectManager())
     this.listener = this.listen.bind(this)
+    this.dbus.driver.on('signal',  m => this.handleSignal(m))
   }
 
   listen(m) {
     console.log('NetworkManager', m)
+  }
+
+  handleSignal(m) {
+    console.log('handleSignal', m)
   }
 
   registerSignals() {
@@ -26,19 +31,17 @@ class NetworkManager extends DBusObject {
       body: [
         new OBJECT_PATH(this.objectPath())
       ]
-    }, (err, data) => {
-      console.log('registerSignals1', err, data)
-      this.dbus.driver.signal({
-        path: '/org/freedesktop/NetworkManager/Devices/2',
-        interface: 'org.freedesktop.NetworkManager.Device.Wireless',
-        member: 'AccessPointRemoved',
-        signature: 'o',
-        body: [
-          new OBJECT_PATH(this.objectPath())
-        ]
-      }, (err, data) => {
-        console.log('registerSignals2', err, data)
-      })
+    })
+
+    console.log('registerSignals1', err, data)
+    this.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager/Devices/2',
+      interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+      member: 'AccessPointRemoved',
+      signature: 'o',
+      body: [
+        new OBJECT_PATH(this.objectPath())
+      ]
     })
   }
 
