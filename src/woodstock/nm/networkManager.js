@@ -21,13 +21,16 @@ class NetworkManager extends DBusObject {
     this.requestScan()
   }
 
+  listen(m) {
+  }
 
   handleSignal(m) {
     if (m && m.path === '/org/freedesktop/NetworkManager/Devices/2' && m.member.startsWith('AccessPoint')) {
       this.getAccessPoints((err, data) => {
         if(err) return console.log('getAccessPoints err', err)
         let air = data.find(x => x.Ssid === 'Wisnuc-Air')
-        if (air) {
+        if (air && !this.lock) {
+          this.lock = true
           console.log('find air:', air)
           this.AddAndActivateConnection(air.Ssid, 'wisnuc123456','/org/freedesktop/NetworkManager/Devices/2', air.objectPath, (err, data) => {
             console.log('************************')
@@ -176,10 +179,12 @@ class NetworkManager extends DBusObject {
     connection.push(new DICT_ENTRY([
       new STRING('type'),
       new VARIANT(new STRING('wifi'))
-    ]), new DICT_ENTRY([
+    ]))
+    connection.push(new DICT_ENTRY([
       new STRING('uuid'),
       new VARIANT(new STRING(UUID.v4()))
-    ]), new DICT_ENTRY([
+    ]))
+    connection.push(new DICT_ENTRY([
       new STRING('id'),
       new VARIANT(new STRING(Ssid))
     ]))
@@ -203,7 +208,8 @@ class NetworkManager extends DBusObject {
     wifi.push(new DICT_ENTRY([
       new STRING('mode'),
       new VARIANT(new STRING('infrastructure'))
-    ]), new DICT_ENTRY([
+    ]))
+    wifi.push(new DICT_ENTRY([
       new STRING('ssid'),
       new VARIANT(ssid)
     ]))
@@ -212,10 +218,12 @@ class NetworkManager extends DBusObject {
     wifiSecurity.push(new DICT_ENTRY([
       new STRING('auth-alg'),
       new VARIANT(new STRING('open'))
-    ]), new DICT_ENTRY([
+    ]))
+    wifiSecurity.push(new DICT_ENTRY([
       new STRING('key-mgmt'),
       new VARIANT(new STRING('wpa-psk'))
-    ]), new DICT_ENTRY([
+    ]))
+    wifiSecurity.push(new DICT_ENTRY([
       new STRING('psk'),
       new VARIANT(new STRING(pwd))
     ]))
@@ -223,16 +231,20 @@ class NetworkManager extends DBusObject {
     con.push(new DICT_ENTRY([
       new STRING('connection'),
       connection
-    ]), new DICT_ENTRY([
+    ]))
+    con.push(new DICT_ENTRY([
       new STRING('ipv4'),
       ipv4
-    ]), new DICT_ENTRY([
+    ]))
+    con.push(new DICT_ENTRY([
       new STRING('ipv6'),
       ipv6
-    ]), new DICT_ENTRY([
+    ]))
+    con.push(new DICT_ENTRY([
       new STRING('wifi'),
       wifi
-    ]), new DICT_ENTRY([
+    ]))
+    con.push(new DICT_ENTRY([
       new STRING('wifi-security'),
       wifiSecurity
     ]))
