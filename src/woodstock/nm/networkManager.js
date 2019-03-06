@@ -178,7 +178,7 @@ class NetworkManager extends DBusObject {
     let connection = new ARRAY('a{sv}')
     connection.push(new DICT_ENTRY([
       new STRING('type'),
-      new VARIANT(new STRING('wifi'))
+      new VARIANT(new STRING('802-11-wireless'))
     ]))
     connection.push(new DICT_ENTRY([
       new STRING('uuid'),
@@ -213,6 +213,7 @@ class NetworkManager extends DBusObject {
       new STRING('ssid'),
       new VARIANT(ssid)
     ]))
+
     // wifi-security
     let wifiSecurity = new ARRAY('a{sv}')
     wifiSecurity.push(new DICT_ENTRY([
@@ -241,14 +242,14 @@ class NetworkManager extends DBusObject {
       ipv6
     ]))
     con.push(new DICT_ENTRY([
-      new STRING('wifi'),
+      new STRING('802-11-wireless'),
       wifi
     ]))
     con.push(new DICT_ENTRY([
-      new STRING('wifi-security'),
+      new STRING('802-11-wireless-security'),
       wifiSecurity
     ]))
-
+    console.log(JSON.stringify(con))
     this.dbus.driver.invoke({
       destination: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager',
