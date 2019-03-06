@@ -1,9 +1,11 @@
+const UUID = require('uuid')
+
 const DBusObject = require('../lib/dbus-object')
 const DBusProperties = require('../lib/dbus-properties')
 const DBusObjectManager = require('../lib/dbus-object-manager')
 const debug = require('debug')('ws:nm')
 const {
-  STRING, OBJECT_PATH, ARRAY
+  STRING, OBJECT_PATH, ARRAY, DICT_ENTRY, VARIANT, UINT32
 } = require('../lib/dbus-types')
 
 class NetworkManager extends DBusObject {
@@ -17,6 +19,10 @@ class NetworkManager extends DBusObject {
   start() {
     this.getDeviceByIpIface('wlan0')
     this.requestScan()
+
+    setTimeout(() => {
+      this.AddAndActivateConnection('/org/freedesktop/NetworkManager/Devices/2', '/')
+    }, 30000)
   }
 
   listen(m) {
@@ -126,11 +132,27 @@ class NetworkManager extends DBusObject {
       ]
     }, (err, data) => {
       if (err) return callback(err)
-      callback(data)
+      let d = {}
+      data[0].elems.forEach(x => {
+        let name = x.elems[0].value
+        let value
+        let valueElem = x.elems[1].elems
+        if (valueElem[1].hasOwnProperty('value')) {
+          value = valueElem[1].value
+        } else {
+          value = valueElem[1].elems.map(x => x.value)
+          if (name === 'Ssid' && value.length) {
+            value = Buffer.from(value).toString()
+          }
+        }
+        d[name] = value
+        d.objectPath = objectPath
+      })
+      callback(null, d)
     })
   }
 
-  requestScan(path) {
+  requestScan(path, callback) {
     this.dbus.driver.invoke({
       destination: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager/Devices/2',
@@ -140,7 +162,90 @@ class NetworkManager extends DBusObject {
       body: [
         new ARRAY('a{sv}')
       ]
+    }, (err, data) => callback && callback(err, data))
+  }
+
+  AddAndActivateConnection(device, specific_object, callback) {
+    console.log('**********************************************')
+    console.log('*************************** start connect wifi')
+    let con = new ARRAY('a{sa{sv}}')
+    // connection
+    let connection = new ARRAY('a{sv}')
+    connection.push(new DICT_ENTRY([
+      new STRING('type'),
+      new VARIANT(new STRING('wifi'))
+    ]), new DICT_ENTRY([
+      new STRING('uuid'),
+      new VARIANT(new STRING(UUID.v4()))
+    ]), new DICT_ENTRY([
+      new STRING('id'),
+      new VARIANT(new STRING('Naxian800'))
+    ]))
+    // ipv4
+    let ipv4 = new ARRAY('a{sv}')
+    ipv4.push(new DICT_ENTRY([
+      new STRING('method'),
+      new VARIANT(new STRING('auto'))
+    ]))
+    // ipv6
+    let ipv6 = new ARRAY('a{sv}')
+    ipv6.push(new DICT_ENTRY([
+      new STRING('method'),
+      new VARIANT(new STRING('auto'))
+    ]))
+
+    //wifi
+    let wifi = new ARRAY('a{sv}')
+    wifi.push(new DICT_ENTRY([
+      new STRING('mode'),
+      new VARIANT(new STRING('infrastructure'))
+    ]), new DICT_ENTRY([
+      new STRING('ssid'),
+      new VARIANT(new ARRAY('ay', Array.from(new Uint8Array(Naxian800))))
+    ]))
+    // wifi-security
+    let wifiSecurity = new Array('a{sv}')
+    wifiSecurity.push(new DICT_ENTRY([
+      new STRING('auth-alg'),
+      new VARIANT(new STRING('open'))
+    ]), new DICT_ENTRY([
+      new STRING('key-mgmt'),
+      new VARIANT(new STRING('wpa-psk'))
+    ]), new DICT_ENTRY([
+      new STRING('psk'),
+      new VARIANT(new STRING('vpai1228'))
+    ]))
+
+    con.push(new DICT_ENTRY([
+      new STRING('connection'),
+      connection
+    ]), new DICT_ENTRY([
+      new STRING('ipv4'),
+      ipv4
+    ]), new DICT_ENTRY([
+      new STRING('ipv6'),
+      ipv6
+    ]), new DICT_ENTRY([
+      new STRING('wifi'),
+      wifi
+    ]), new DICT_ENTRY([
+      new STRING('wifi-security'),
+      wifiSecurity
+    ]))
+
+    this.dbus.driver.invoke({
+      destination: 'org.freedesktop.NetworkManager',
+      path: '/org/freedesktop/NetworkManager',
+      'interface': 'org.freedesktop.NetworkManager',
+      member: 'AddAndActivateConnection',
+      signature: 'a{sa{sv}}oo',
+      body:[
+        con,
+        new OBJECT_PATH(device),
+        new OBJECT_PATH(specific_object)
+      ]
     }, (err, data) => {
+      console.log('*********************** return******')
       console.log(err, data)
     })
   }
