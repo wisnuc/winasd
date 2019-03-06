@@ -728,7 +728,7 @@ const VARIANT = DEC({ code: 'v', align: 1 })(
     // ???
     constructByElements ([elem], sig) {
       this.elems = [new SIGNATURE(elem.signature()), elem]
-      this.esigs = this.elems.map(elem => elem.signature)
+      this.esigs = this.elems.map(elem => elem.signature())
       this.sig = sig
     }
 

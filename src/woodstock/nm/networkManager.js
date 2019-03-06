@@ -19,20 +19,24 @@ class NetworkManager extends DBusObject {
   start() {
     this.getDeviceByIpIface('wlan0')
     this.requestScan()
-
-    setTimeout(() => {
-      this.AddAndActivateConnection('/org/freedesktop/NetworkManager/Devices/2', '/')
-    }, 30000)
   }
 
-  listen(m) {
-    console.log('NetworkManager', m)
-  }
 
   handleSignal(m) {
     if (m && m.path === '/org/freedesktop/NetworkManager/Devices/2' && m.member.startsWith('AccessPoint')) {
-      console.log('handleSignal', m)
-      this.getAccessPoints((err, data) => console.log(err, data))
+      this.getAccessPoints((err, data) => {
+        if(err) return console.log('getAccessPoints err', err)
+        let air = data.find(x => x.Ssid === 'Wisnuc-Air')
+        if (air) {
+          console.log('find air:', air)
+          this.AddAndActivateConnection(air.Ssid, 'wisnuc123456','/org/freedesktop/NetworkManager/Devices/2', air.objectPath, (err, data) => {
+            console.log('************************')
+            console.log('add success')
+            console.log(err)
+            console.log(data)
+          })
+        }
+      })
     }
   }
 
@@ -165,9 +169,7 @@ class NetworkManager extends DBusObject {
     }, (err, data) => callback && callback(err, data))
   }
 
-  AddAndActivateConnection(device, specific_object, callback) {
-    console.log('**********************************************')
-    console.log('*************************** start connect wifi')
+  AddAndActivateConnection(Ssid, pwd, device, specific_object, callback) {
     let con = new ARRAY('a{sa{sv}}')
     // connection
     let connection = new ARRAY('a{sv}')
@@ -179,7 +181,7 @@ class NetworkManager extends DBusObject {
       new VARIANT(new STRING(UUID.v4()))
     ]), new DICT_ENTRY([
       new STRING('id'),
-      new VARIANT(new STRING('Naxian800'))
+      new VARIANT(new STRING(Ssid))
     ]))
     // ipv4
     let ipv4 = new ARRAY('a{sv}')
@@ -196,17 +198,17 @@ class NetworkManager extends DBusObject {
 
     //wifi
     let wifi = new ARRAY('a{sv}')
-    let ssid = new ARRAY('ai')
-    Array.from(new Uint8Array('Naxian800')).forEach(x => ssid.push(new BYTE(x)))
+    let ssid = new ARRAY('ay')
+    Array.from(Buffer.from(Ssid)).forEach(x => ssid.push(new BYTE(x)))
     wifi.push(new DICT_ENTRY([
       new STRING('mode'),
       new VARIANT(new STRING('infrastructure'))
     ]), new DICT_ENTRY([
       new STRING('ssid'),
-      new VARIANT(new ARRAY('ai', ssid))
+      new VARIANT(ssid)
     ]))
     // wifi-security
-    let wifiSecurity = new Array('a{sv}')
+    let wifiSecurity = new ARRAY('a{sv}')
     wifiSecurity.push(new DICT_ENTRY([
       new STRING('auth-alg'),
       new VARIANT(new STRING('open'))
@@ -215,7 +217,7 @@ class NetworkManager extends DBusObject {
       new VARIANT(new STRING('wpa-psk'))
     ]), new DICT_ENTRY([
       new STRING('psk'),
-      new VARIANT(new STRING('vpai1228'))
+      new VARIANT(new STRING(pwd))
     ]))
 
     con.push(new DICT_ENTRY([
@@ -246,10 +248,7 @@ class NetworkManager extends DBusObject {
         new OBJECT_PATH(device),
         new OBJECT_PATH(specific_object)
       ]
-    }, (err, data) => {
-      console.log('*********************** return******')
-      console.log(err, data)
-    })
+    }, callback)
   }
 }
 
