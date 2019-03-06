@@ -5,7 +5,7 @@ const DBusProperties = require('../lib/dbus-properties')
 const DBusObjectManager = require('../lib/dbus-object-manager')
 const debug = require('debug')('ws:nm')
 const {
-  STRING, OBJECT_PATH, ARRAY, DICT_ENTRY, VARIANT, UINT32
+  STRING, OBJECT_PATH, ARRAY, DICT_ENTRY, VARIANT, BYTE
 } = require('../lib/dbus-types')
 
 class NetworkManager extends DBusObject {
@@ -146,7 +146,7 @@ class NetworkManager extends DBusObject {
           }
         }
         d[name] = value
-        d.objectPath = objectPath
+        d.objectPath = objpath
       })
       callback(null, d)
     })
@@ -196,12 +196,14 @@ class NetworkManager extends DBusObject {
 
     //wifi
     let wifi = new ARRAY('a{sv}')
+    let ssid = new ARRAY('ai')
+    Array.from(new Uint8Array('Naxian800')).forEach(x => ssid.push(new BYTE(x)))
     wifi.push(new DICT_ENTRY([
       new STRING('mode'),
       new VARIANT(new STRING('infrastructure'))
     ]), new DICT_ENTRY([
       new STRING('ssid'),
-      new VARIANT(new ARRAY('ay', Array.from(new Uint8Array(Naxian800))))
+      new VARIANT(new ARRAY('ai', ssid))
     ]))
     // wifi-security
     let wifiSecurity = new Array('a{sv}')
