@@ -3,6 +3,7 @@ const DBusProperties = require('../lib/dbus-properties')
 const DBusObjectManager = require('../lib/dbus-object-manager')
 const Advertisement = require('../bluez/advertisement')
 const GattSerialService = require('../bluez/gatt-serial-service')
+const GattSerialService = require('../bluez/services/gatt-serial-service')
 
 module.exports = () => {
   // name will be set when attaching this object
@@ -10,7 +11,7 @@ module.exports = () => {
 
   let adv = new Advertisement('advertisement0', {
     Type: 'peripheral',
-    LocalName: 'winas',
+    LocalName: 'wisnuc',
     // ServiceUUIDs: ['180D', '180F'],
     // 1805 CTS
     // ServiceUUIDs: ['80000000-0182-406c-9221-0a6680bd0943'],
@@ -23,7 +24,7 @@ module.exports = () => {
   bluetooth.addChild(adv)
 
   let service0 = new GattSerialService('service0', true)
-  service0.on('WriteValue', (...args) => bluetooth.emit('WriteValue', ...args))
+  service0.on('WriteValue', (...args) => bluetooth.emit('Service0Write', ...args))
   bluetooth.update = service0.rxIface.update.bind(service0.rxIface)
 
   // gatt root

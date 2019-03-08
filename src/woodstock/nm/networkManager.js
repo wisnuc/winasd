@@ -263,6 +263,14 @@ class NetworkManager extends DBusObject {
       ]
     }, callback)
   }
+
+  connect(Ssid, pwd, callback) {
+
+  }
+
+  getWifiList(callback) {
+
+  }
 }
 
 module.exports = NetworkManager
