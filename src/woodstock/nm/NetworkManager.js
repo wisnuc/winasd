@@ -383,9 +383,9 @@ class NetworkManager extends DBusObject {
   }
 
   getAccessPointsDetails(device, callback) {
-    this.accessPoint.RequestScan(devices[0], err => {
+    this.accessPoint.RequestScan(device, err => {
       // ignore err
-      this.accessPoint.GetAccessPoints(devices[0], (err, acs) => {
+      this.accessPoint.GetAccessPoints(device, (err, acs) => {
         if (err || !acs.length) return callback(null, [])
         let count = acs.length
         let aps = []
