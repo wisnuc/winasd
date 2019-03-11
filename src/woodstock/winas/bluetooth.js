@@ -40,10 +40,19 @@ module.exports = () => {
   let gatt = new DBusObject('gatt')
     .addInterface(new DBusObjectManager())
     .addChild(service0)
-    .addChild(service1)
-    .addChild(service2)
 
-  bluetooth.addChild(gatt)
+  let gatt1 = new DBusObject('gatt1')
+    .addInterface(new DBusObjectManager())
+    .addChild(service0)
+
+  let gatt2 = new DBusObject('gatt2')
+    .addInterface(new DBusObjectManager())
+    .addChild(service0)
+
+  bluetooth
+    .addChild(gatt)
+    .addChild(gatt1)
+    .addChild(gatt2)
 
   return bluetooth
 }
