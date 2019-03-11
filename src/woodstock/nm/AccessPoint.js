@@ -1,3 +1,7 @@
+const {
+  STRING, OBJECT_PATH, ARRAY, DICT_ENTRY, VARIANT, BYTE, BOOLEAN
+} = require('../lib/dbus-types')
+
 class AccessPoints {
 
   constructor(ctx) {
