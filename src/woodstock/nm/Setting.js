@@ -94,7 +94,7 @@ class Setting extends require('events') {
       member: 'ConnectionRemoved',
       signature: 'o',
       body: [
-        new OBJECT_PATH('/org/freedesktop/NetworkManager/Settings')
+        new OBJECT_PATH('/org/freedesktop/NetworkManager')
       ]
     })
 
@@ -104,7 +104,7 @@ class Setting extends require('events') {
       member: 'NewConnection',
       signature: 'o',
       body: [
-        new OBJECT_PATH('/org/freedesktop/NetworkManager/Settings')
+        new OBJECT_PATH('/org/freedesktop/NetworkManager')
       ]
     })
   }

@@ -129,7 +129,7 @@ class AccessPoints {
         member: 'AccessPointAdded',
         signature: 'o',
         body: [
-          new OBJECT_PATH(device)
+          new OBJECT_PATH(this.ctx.objectPath())
         ]
       })
   
@@ -139,7 +139,7 @@ class AccessPoints {
         member: 'AccessPointRemoved',
         signature: 'o',
         body: [
-          new OBJECT_PATH(device)
+          new OBJECT_PATH(this.ctx.objectPath())
         ]
       })
     })
