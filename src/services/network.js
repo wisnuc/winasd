@@ -29,6 +29,7 @@ class Setting extends State {
 
 class NetWork extends require('event') {
   constructor(ctx) {
+    super()
     this.ctx = ctx
   }
 

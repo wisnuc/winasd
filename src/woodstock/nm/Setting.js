@@ -1,6 +1,7 @@
 class Setting extends require('events') {
 
   constructor(ctx) {
+    super()
     this.ctx = ctx
     this.ctx.addSignalHandle('/org/freedesktop/NetworkManager/Settings', m => {
       if (m.member === 'ConnectionRemoved') {

@@ -11,7 +11,7 @@ class LocalAuth {
       setTimeout(() => {
         this.state = 'Idle'
       }, 30*1000)
-      callback(null, [012, 023, 123, 102])
+      callback(null, [120, 203, 123, 102])
     } else {
       callback(Object.assign(new Error('busy'), { code: 'EBUSY'}))
     }
