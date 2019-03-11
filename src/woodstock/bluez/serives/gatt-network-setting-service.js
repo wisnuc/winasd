@@ -9,8 +9,8 @@ const ReadNotifyChar = require('../gatt-read-notify-char')
 const WriteReadChar = require('../gatt-write-read-char')
 const { OBJECT_PATH, ARRAY } = require('../../lib/dbus-types')
 
-const DBusInterfaceDefinition = require('../lib/dbus-interface-definition')
-const parseXml = require('../lib/parse-xml')
+const DBusInterfaceDefinition = require('../../lib/dbus-interface-definition')
+const parseXml = require('../../lib/parse-xml')
 
 // Device is a client-specific property
 // Includes not implemented according to bluez doc
