@@ -416,16 +416,22 @@ class NetworkManager extends DBusObject {
             if(err) return callback(Object.assign(err, { code: 'ECONN'}))
             let setting = data[0].value
             let activeConn = data[1].value
-            this.setting.ReloadConnections(err => { // reload
-              this.ActiveConnections((err, data) => {
-                if (err) return callback(err)
-                if (!data.find(x => x === activeConn)) return callback(Object.assign(new Error('connect failed', { code: 'ECONN' })))
-                this.ActiveConnectionAddressData(activeConn, (err, data) => {
-                  if(err) return callback(Object.assign(err, { code: 'ECONN'}))
-                  callback(null, data)
+            let count = 0
+            let handleFunc = () => {
+              console.log('***X**X*X*X**X*X**X*X**X*X**X*X')
+              if (++count == 3) {
+                this.removeSignalHandle(setting, handleFunc)
+                this.ActiveConnections((err, data) => {
+                  if (err) return callback(err)
+                  if (!data.find(x => x === activeConn)) return callback(Object.assign(new Error('connect failed', { code: 'ECONN' })))
+                  this.ActiveConnectionAddressData(activeConn, (err, data) => {
+                    if(err) return callback(Object.assign(err, { code: 'ECONN'}))
+                    callback(null, data)
+                  })
                 })
-              })
-            })
+              }
+            }
+            this.addSignalHandle(setting, handleFunc)
           })
         } else {
           return callback(Object.assign(new Error('wifi not found'), { code: 'ENOINT' }))
