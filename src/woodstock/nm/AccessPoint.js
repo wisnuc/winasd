@@ -123,7 +123,7 @@ class AccessPoints {
       let device = data[0]
       this.device = device
       console.log('AccessPoints mounted, start listening', device)
-      this.dbus.driver.signal({
+      this.ctx.dbus.driver.signal({
         path: device,
         interface: 'org.freedesktop.NetworkManager.Device.Wireless',
         member: 'AccessPointAdded',
@@ -133,7 +133,7 @@ class AccessPoints {
         ]
       })
   
-      this.dbus.driver.signal({
+      this.ctx.dbus.driver.signal({
         path: device,
         interface: 'org.freedesktop.NetworkManager.Device.Wireless',
         member: 'AccessPointRemoved',
