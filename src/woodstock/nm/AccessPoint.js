@@ -107,7 +107,7 @@ class AccessPoints {
           }
         }
         d[name] = value
-        d.objectPath = objpath
+        d.objectPath = objPath
       })
       callback(null, d)
     })

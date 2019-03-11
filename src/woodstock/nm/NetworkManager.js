@@ -298,6 +298,26 @@ class NetworkManager extends DBusObject {
     })
   }
 
+  // Get ActiveConnection`s AddressData Propertity
+  ActiveConnectionAddressData (objPath, callback) {
+    this.Get(objPath, 'org.freedesktop.NetworkManager.Connection.Active', 'Ip4Config', (err, data) => {
+      if (err) return callback(Object.assign(err, { code: 'EIPV4'}))
+      let ipv4Conf = data[0].elems[1].value // objp
+      this.Get(ipv4Conf, 'org.freedesktop.NetworkManager.IP4Config', 'AddressData', (err, data) => {
+        if (err) return callback(Object.assign(err, { code: 'EIPV4'}))
+        let elems = data[0].elems[1].elems[0].elems
+        let addressData = {}
+
+        elems.forEach(x => {
+          let name = x.elems[0].value
+          let data = x.elems[1].elems[1].value
+          addressData[name] = data
+        })
+        return callback(null, addressData)
+      })
+    })
+  }
+
   // get a property`s value
   Get(objPath, binterface, bname, callback) {
     this.dbus.driver.invoke({
@@ -314,13 +334,13 @@ class NetworkManager extends DBusObject {
   }
 
   // get all properties`s values
-  GetAll(objPath, binterface) {
+  GetAll(objPath, binterface, callback) {
     this.dbus.driver.invoke({
       destination: 'org.freedesktop.NetworkManager',
       path: objPath,
       'interface': 'org.freedesktop.DBus.Properties',
       member: 'GetAll',
-      signature: 'ss',
+      signature: 's',
       body: [
         new STRING(binterface)
       ]
@@ -367,13 +387,21 @@ class NetworkManager extends DBusObject {
         if (err) return callback(err)
         let wa = data.find(x => x.Ssid === ssid)
         if (wa) {
-          this.AddAndActivateConnection(wa.Ssid, pwd, device[0], wa.objectPath, (err, data) => {
+          this.AddAndActivateConnection(wa.Ssid, pwd, devices[0], wa.objectPath, (err, data) => {
             console.log('************************')
-            console.log('add success')
-            console.log(err)
-            console.log(data)
-            if(err) return callback(err)
-            throw new Error()
+            console.log('connect add success')
+            console.log(err, data)
+            if(err) return callback(Object.assign(err, { code: 'ECONN'}))
+            let setting = data[0].value
+            let activeConn = data[1].value
+            this.ActiveConnections((err, data) => {
+              if (err) return callback(err)
+              if (!data.find(x => x === activeConn)) return callback(Object.assign(new Error('connect failed', { code: 'ECONN' })))
+              this.ActiveConnectionAddressData(activeConn, (err, data) => {
+                if(err) return callback(Object.assign(err, { code: 'ECONN'}))
+                callback(null, data)
+              })
+            })
           })
         } else {
           return callback(Object.assign(new Error('wifi not found'), { code: 'ENOINT' }))

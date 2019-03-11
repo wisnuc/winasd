@@ -24,7 +24,7 @@ class BLED extends require('events') {
       this.dbus.attach('/org/freedesktop/NetworkManager', this.nm)
 
       setTimeout(() => {
-        this.nm.connect('Xiaomi_123', 'winsun123456', (err, data) => console.log('******************', err, data))
+        this.nm.connect('Wisnuc-Air', 'wisnuc123456', (err, data) => console.log('******************', err, data))
       }, 3 * 1000)
     })
     this.handlers = new Map()
