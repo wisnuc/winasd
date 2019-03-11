@@ -49,8 +49,27 @@ class NetworkManager extends DBusObject {
     this.dbus.listen({
       sender: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager'
-    }, this.handleSignal)
+    }, () => {})
     this.dbus.driver.on('signal',  m => this.handleSignal(m))
+    this.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager/Devices/2',
+      interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+      member: 'AccessPointAdded',
+      signature: 'o',
+      body: [
+        new OBJECT_PATH(this.objectPath())
+      ]
+    })
+
+    this.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager/Devices/2',
+      interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+      member: 'AccessPointRemoved',
+      signature: 'o',
+      body: [
+        new OBJECT_PATH(this.objectPath())
+      ]
+    })
     this.setting.mounted()
     this.accessPoint.mounted()
   }
