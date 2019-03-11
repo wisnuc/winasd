@@ -417,8 +417,9 @@ class NetworkManager extends DBusObject {
             let setting = data[0].value
             let activeConn = data[1].value
             let count = 0
-            let handleFunc = () => {
+            let handleFunc = m => {
               console.log('***X**X*X*X**X*X**X*X**X*X**X*X')
+              if (m.member !== 'Updated') return
               if (++count == 3) {
                 this.removeSignalHandle(setting, handleFunc)
                 this.ActiveConnections((err, data) => {
