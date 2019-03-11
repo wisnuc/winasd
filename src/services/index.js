@@ -11,6 +11,7 @@ const DataStore = require('../lib/DataStore')
 const Upgrade = require('./upgrade')
 const Bled = require('./BLED')
 const Net = require('./net')
+const LocalAuth = require('./localAuth')
 const Provision = require('./provision')
 const Winas = require('./winas')
 const Channel = require('./channel')
@@ -104,8 +105,8 @@ class AppService {
       type: 'boundUser',
       data: this.userStore.data
     })
-
-    this.bled.setStationStatus(this.userStore.data ? 2: 1)
+    // update ble advertisement
+    //this.bled&&this.bled.setStationStatus(this.userStore.data ? 2: 1)
   }
 
   /**
@@ -178,38 +179,42 @@ class AppService {
 
   startServices () {
     console.log('run in normal state')
-    this.net = new Net()
-    this.net.on('Connected', () => {
-      this.channel && this.channel.connect()
-    })
-    this.bled = new Bled(Config.ble.port, Config.ble.baudRate, Config.ble.bin)
-    this.bled.addHandler('CMD_SCAN', packet => {
-      console.log('CMD_SCAN', packet)
-      this.net.scan((err, list) => {
-        this.bled.update(err ? { error: err} : { data: list})
+    this.localAuth = new LocalAuth(this)
+    this.bled = new Bled(this)
+    /*
+      this.net = new Net()
+      this.net.on('Connected', () => {
+        this.channel && this.channel.connect()
       })
-    })
-    this.bled.addHandler('CMD_CONN', packet => {
-      console.log('CMD_CONN', packet)
-      this.net.connect(packet.ssid, packet.password, (err, res) => {
-        this.bled.update(err ? { error: err} : { data: res})
+      this.bled = new Bled(this)
+      this.bled.addHandler('CMD_SCAN', packet => {
+        console.log('CMD_SCAN', packet)
+        this.net.scan((err, list) => {
+          this.bled.update(err ? { error: err} : { data: list})
+        })
       })
-    })
+      this.bled.addHandler('CMD_CONN', packet => {
+        console.log('CMD_CONN', packet)
+        this.net.connect(packet.ssid, packet.password, (err, res) => {
+          this.bled.update(err ? { error: err} : { data: res})
+        })
+      })
 
-    this.bled.addHandler('CMD_NET', packet => {
-      console.log('CMD_NET', packet)
-      this.net.netInfo((err, res) => {
-        this.bled.update(err ? { error: err} : { data: res })
+      this.bled.addHandler('CMD_NET', packet => {
+        console.log('CMD_NET', packet)
+        this.net.netInfo((err, res) => {
+          this.bled.update(err ? { error: err} : { data: res })
+        })
       })
-    })
 
-    this.bled.on('Connected', () => {
-      if (this.deviceSN) { // update sn
-        this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)))
-      }
-      // update status
-      this.bled.setStationStatus(this.userStore.data ? 2: 1)
-    })
+      this.bled.on('Connected', () => {
+        if (this.deviceSN) { // update sn
+          this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)))
+        }
+        // update status
+        this.bled.setStationStatus(this.userStore.data ? 2: 1)
+      })
+    */
     this.winas = new Winas(this)
     this.channel = new Channel(this)
   }

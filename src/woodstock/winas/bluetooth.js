@@ -24,17 +24,20 @@ module.exports = () => {
 
   bluetooth.addChild(adv)
 
-  let service0 = new GattSerialService('service0', true)
-  service0.on('WriteValue', (...args) => bluetooth.emit('Service0Write', ...args))
-  bluetooth.update0 = service0.rxIface.update.bind(service0.rxIface)
-
+  //600 LocalAuth
   let service1 = new GattLocalAuthService('service1', true)
   service1.on('WriteValue', (...args) => bluetooth.emit('Service1Write', ...args))
-  bluetooth.update1 = service1.rxIface.update.bind(service1.rxIface)
+  bluetooth.Service1Update = service1.rxIface.update.bind(service1.rxIface)
 
+  // 700 NetworkSetting
   let service2 = new GattNetworkSettingService('service2', true)
   service2.on('WriteValue', (...args) => bluetooth.emit('Service2Write', ...args))
-  bluetooth.update2 = service2.rxIface.update.bind(service2.rxIface)
+  bluetooth.Service2Update = service2.rxIface.update.bind(service2.rxIface)
+
+  // 800 Cloud
+  let service3 = new GattSerialService('service3', true)
+  service3.on('WriteValue', (...args) => bluetooth.emit('Service3Write', ...args))
+  bluetooth.Service3Update = service3.rxIface.update.bind(service3.rxIface)
 
   // gatt root
   let gatt = new DBusObject('gatt')
@@ -47,7 +50,7 @@ module.exports = () => {
 
   let gatt2 = new DBusObject('gatt2')
     .addInterface(new DBusObjectManager())
-    .addChild(service0)
+    .addChild(service3)
 
   bluetooth
     .addChild(gatt)

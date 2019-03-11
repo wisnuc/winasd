@@ -2,6 +2,27 @@ class AccessPoints {
 
   constructor(ctx) {
     this.ctx = ctx
+
+    this.handleFunc = m => { // TODO:  emit events here
+      if (m.member === 'ConnectionRemoved') {
+        console.log('ConnectionRemoved', m)
+      } else if (m.member === 'NewConnection') {
+        console.log('NewConnection', m)
+      }
+    }
+    Object.defineProperty(this, 'device', {
+      set (v) {
+        if (this._device) {
+          this.ctx.removeSignalHandle(this._device, this.handleFunc) // remove old handler
+        }
+        this._device = v
+        if (v)
+          this.ctx.addSignalHandle(v, this.handleFunc.bind(this))
+      },
+      get() {
+        return _device
+      }
+    })
   }
 
   //集合方法
@@ -45,29 +66,6 @@ class AccessPoints {
         return callback(null, elems.map(x => x.value))
       } else 
         callback(null, [])
-    })
-  }
-
-  registerSignals() {
-    
-    this.ctx.dbus.driver.signal({
-      path: '/org/freedesktop/NetworkManager/Devices/2',
-      interface: 'org.freedesktop.NetworkManager.Device.Wireless',
-      member: 'AccessPointAdded',
-      signature: 'o',
-      body: [
-        new OBJECT_PATH(this.objectPath())
-      ]
-    })
-
-    this.ctx.dbus.driver.signal({
-      path: '/org/freedesktop/NetworkManager/Devices/2',
-      interface: 'org.freedesktop.NetworkManager.Device.Wireless',
-      member: 'AccessPointRemoved',
-      signature: 'o',
-      body: [
-        new OBJECT_PATH(this.objectPath())
-      ]
     })
   }
 
@@ -116,7 +114,31 @@ class AccessPoints {
   }
 
   mounted() {
-    
+    this.ctx.getWirelessDevices((err, data) => {
+      if (err || !data.length) return console.log('AccessPoints mounted but no wireless device')
+      let device = data[0]
+      this.device = device
+      console.log('AccessPoints mounted, start listening', device)
+      this.dbus.driver.signal({
+        path: device,
+        interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+        member: 'AccessPointAdded',
+        signature: 'o',
+        body: [
+          new OBJECT_PATH(this.objectPath())
+        ]
+      })
+  
+      this.dbus.driver.signal({
+        path: device,
+        interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+        member: 'AccessPointRemoved',
+        signature: 'o',
+        body: [
+          new OBJECT_PATH(this.objectPath())
+        ]
+      })
+    })
   }
 
   logout() {

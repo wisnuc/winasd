@@ -1,7 +1,14 @@
-class Setting {
+class Setting extends require('events') {
 
   constructor(ctx) {
     this.ctx = ctx
+    this.ctx.addSignalHandle('/org/freedesktop/NetworkManager/Settings', m => {
+      if (m.member === 'ConnectionRemoved') {
+        console.log('ConnectionRemoved', m)
+      } else if (m.member === 'NewConnection') {
+        console.log('NewConnection', m)
+      }
+    })
   }
 
   // 集合操作
@@ -67,7 +74,25 @@ class Setting {
   }
   
   mounted() {
-    
+    this.ctx.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager/Settings',
+      interface: 'org.freedesktop.NetworkManager.Settings',
+      member: 'ConnectionRemoved',
+      signature: 'o',
+      body: [
+        new OBJECT_PATH('/org/freedesktop/NetworkManager/Settings')
+      ]
+    })
+
+    this.ctx.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager/Settings',
+      interface: 'org.freedesktop.NetworkManager.Settings',
+      member: 'NewConnection',
+      signature: 'o',
+      body: [
+        new OBJECT_PATH('/org/freedesktop/NetworkManager/Settings')
+      ]
+    })
   }
 
   listen(m) {

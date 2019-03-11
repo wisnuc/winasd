@@ -1,14 +1,31 @@
 const Bluetooth = require('../woodstock/winas/bluetooth')
 const DBus = require('../woodstock/lib/dbus')
+const NetWorkManager = require('../woodstock/nm/NetworkManager')
+
+/**
+ * definition bluetooth packet
+ * 
+ * {
+ *    action: 'scan'/'conn'/'net'/
+ *    seq: 1000,
+ *    body:{}
+ * }
+ */
+
 class BLED extends require('events') {
-  constructor() {
+  constructor(ctx) {
     super()
+    this.ctx = ctx
     this.dbus = new DBus()
     this.dbus.on('connect', () => {
       this.ble = Bluetooth()
-      // this.net = new NetworkManager()
       this.dbus.attach('/org/bluez/bluetooth', this.ble)
-      // this.dbus.attach('/org/freedesktop/NetworkManager', this.net)
+      this.nm = new NetWorkManager()
+      this.dbus.attach('/org/freedesktop/NetworkManager', this.nm)
+
+      setTimeout(() => {
+        this.nm.connect('Xiaomi_123', 'winsun123456', (err, data) => console.log('******************', err, data))
+      }, 3 * 1000)
     })
     this.handlers = new Map()
   }
@@ -18,23 +35,57 @@ class BLED extends require('events') {
       this._ble.removeAllListeners()
     }
     this._ble = x
-    this._ble.on('WriteValue', this.handleBleMessage.bind(this))
+    this._ble.on('Service1Write', this.handleBleMessage.bind(this, 'Service1Write')) // LocalAuth
+    this._ble.on('Service2Write', this.handleBleMessage.bind(this, 'Service2Write')) // NetSetting
+    this._ble.on('Service3Write', this.handleBleMessage.bind(this, 'Service3Write')) // Cloud
   }
 
   get ble() { return this._ble }
 
-  handleBleMessage(data, opts) {
+  handleBleMessage(type, data, opts) {
     let packet
     try {
       packet = JSON.parse(data)
     } catch(e) {
-      return this.update({ code: 'ENOTJSON', message: 'packet error'})
+      return this.update(type, { code: 'ENOTJSON', message: 'packet error'})
     }
 
-    if (packet.action === 'scan') return this.dispatch('CMD_SCAN', packet)
-    if (packet.action === 'conn') return this.dispatch('CMD_CONN', packet)
-    if (packet.action === 'net') return this.dispatch('CMD_NET', packet)
+    if (type === 'Service1Write') return this.handleLocalAuth(type, data)
+    if (type === 'Service2Write') return this.handleNetworkSetting(type, data)
+    if (type === 'Service3Write') return this.handleCloud(type, data)
     console.log('invalid action: ', packet.action)
+  }
+
+
+  handleLocalAuth(type, packet) {
+    if (packet.action === 'req') {
+      this.ctx.localAuth.request((err, data) => {
+        if (err) return this.update(type, { seq: packet.seq, error: err })
+        return this.update(type, { seq: packet.seq, data})
+      })
+    } else if (packet.action == 'auth') {
+      this.ctx.localAuth.auth(packet.body, (err, data) => {
+        if (err) return this.update(type, { seq: packet.seq, error, err })
+        return this.update(type, {seq: packet.seq, data})
+      })
+    }
+  }
+
+  /**
+   * action: auth/conn
+   * data: {token}/{ssid, pwd}
+   */
+  handleNetworkSetting(type, packet) {
+    if (packet.action === 'conn') {
+      this.nm.connect(packet.body.ssid, packet.body.pwd, (err, data) => {
+        if (err) return this.update(type, { seq: packet.seq, error, err })
+        return this.update(type, {seq: packet.seq, data})
+      })
+    }
+  }
+
+  handleCloud(type, packet) {
+
   }
 
   addHandler(type, callback){
@@ -59,10 +110,10 @@ class BLED extends require('events') {
     }
   }
 
-  update(data) {
+  update(type, data) {
     if (this.ble) {
       data = Buffer.from(JSON.stringify(data))
-      this.ble.update(data)
+      this.ble[type.slice(0, 8)+ 'Update'](data)
     }
   }
 

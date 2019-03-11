@@ -21,7 +21,6 @@ class NetworkManager extends DBusObject {
   }
 
   handleSignal(m) {
-    // if (m && m.path === '/org/freedesktop/NetworkManager/Devices/2' && m.member.startsWith('AccessPoint')) {
     if (m && this.handleSignalMap.has(m.path)) {
       this.handleSignalMap.get(m.path).forEach(x => x(m))
     }
@@ -32,6 +31,16 @@ class NetworkManager extends DBusObject {
       this.handleSignalMap.get(path).push(callback)
     } else {
       this.handleSignalMap.set(path, [callback])
+    }
+  }
+
+  removeSignalHandle(path, callback) {
+    if (this.handleSignalMap.has(path)) {
+      let callbacks = this.handleSignalMap.get(path)
+      let index = callbacks.findIndex(x => x === callback)
+      if (index !== -1) {
+        this.handleSignalMap.set(path, [...callbacks.slice(0, index), ...callbacks.slice(index + 1)])
+      } 
     }
   }
 
@@ -289,7 +298,36 @@ class NetworkManager extends DBusObject {
     })
   }
 
-  /**
+  // get a property`s value
+  Get(objPath, binterface, bname, callback) {
+    this.dbus.driver.invoke({
+      destination: 'org.freedesktop.NetworkManager',
+      path: objPath,
+      'interface': 'org.freedesktop.DBus.Properties',
+      member: 'Get',
+      signature: 'ss',
+      body: [
+        new STRING(binterface),
+        new STRING(bname)
+      ]
+    }, (err, data) => callback && callback(err, data))
+  }
+
+  // get all properties`s values
+  GetAll(objPath, binterface) {
+    this.dbus.driver.invoke({
+      destination: 'org.freedesktop.NetworkManager',
+      path: objPath,
+      'interface': 'org.freedesktop.DBus.Properties',
+      member: 'GetAll',
+      signature: 'ss',
+      body: [
+        new STRING(binterface)
+      ]
+    }, (err, data) => callback && callback(err, data))
+  }
+
+   /**
    * get wireless devices (wifi device)
    * 
    * NM_DEVICE_TYPE_UNKNOWN = 0 unknown device
@@ -321,33 +359,46 @@ class NetworkManager extends DBusObject {
     })
   }
 
-  // get a property`s value
-  Get(objPath, binterface, bname, callback) {
-    this.dbus.driver.invoke({
-      destination: 'org.freedesktop.NetworkManager',
-      path: objPath,
-      'interface': 'org.freedesktop.DBus.Properties',
-      member: 'Get',
-      signature: 'ss',
-      body: [
-        new STRING(binterface),
-        new STRING(bname)
-      ]
-    }, (err, data) => callback && callback(err, data))
+  // connect to internet
+  connect(ssid, pwd, callback) {
+    this.getWirelessDevices((err, devices) => {
+      if (err || !devices.length) return callback(Object.assign(err, { code: 'ENODEVICE' }))
+      this.getAccessPointsDetails(devices[0], (err, data) => {
+        if (err) return callback(err)
+        let wa = data.find(x => x.Ssid === ssid)
+        if (wa) {
+          this.AddAndActivateConnection(wa.Ssid, pwd, device[0], wa.objectPath, (err, data) => {
+            console.log('************************')
+            console.log('add success')
+            console.log(err)
+            console.log(data)
+            if(err) return callback(err)
+            throw new Error()
+          })
+        } else {
+          return callback(Object.assign(new Error('wifi not found'), { code: 'ENOINT' }))
+        }
+      })
+    })
   }
 
-  // get all properties`s values
-  GetAll(objPath, binterface) {
-    this.dbus.driver.invoke({
-      destination: 'org.freedesktop.NetworkManager',
-      path: objPath,
-      'interface': 'org.freedesktop.DBus.Properties',
-      member: 'GetAll',
-      signature: 'ss',
-      body: [
-        new STRING(binterface)
-      ]
-    }, (err, data) => callback && callback(err, data))
+  getAccessPointsDetails(device, callback) {
+    this.accessPoint.RequestScan(devices[0], err => {
+      // ignore err
+      this.accessPoint.GetAccessPoints(devices[0], (err, acs) => {
+        if (err || !acs.length) return callback(null, [])
+        let count = acs.length
+        let aps = []
+        acs.forEach(x => {
+          this.accessPoint.GetAccessPointProperties(x, (err, data) => {
+            if (data) aps.push(data)
+            if (!--count) {
+              return callback(null, aps)
+            }
+          })
+        })
+      })
+    })
   }
 }
 
