@@ -259,7 +259,6 @@ class NetworkManager extends DBusObject {
       new STRING('802-11-wireless-security'),
       wifiSecurity
     ]))
-    console.log(JSON.stringify(con))
     this.dbus.driver.invoke({
       destination: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager',
@@ -394,12 +393,14 @@ class NetworkManager extends DBusObject {
             if(err) return callback(Object.assign(err, { code: 'ECONN'}))
             let setting = data[0].value
             let activeConn = data[1].value
-            this.ActiveConnections((err, data) => {
-              if (err) return callback(err)
-              if (!data.find(x => x === activeConn)) return callback(Object.assign(new Error('connect failed', { code: 'ECONN' })))
-              this.ActiveConnectionAddressData(activeConn, (err, data) => {
-                if(err) return callback(Object.assign(err, { code: 'ECONN'}))
-                callback(null, data)
+            this.setting.ReloadConnections(err => { // reload
+              this.ActiveConnections((err, data) => {
+                if (err) return callback(err)
+                if (!data.find(x => x === activeConn)) return callback(Object.assign(new Error('connect failed', { code: 'ECONN' })))
+                this.ActiveConnectionAddressData(activeConn, (err, data) => {
+                  if(err) return callback(Object.assign(err, { code: 'ECONN'}))
+                  callback(null, data)
+                })
               })
             })
           })

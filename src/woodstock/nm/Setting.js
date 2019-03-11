@@ -28,6 +28,15 @@ class Setting extends require('events') {
     })
   }
 
+  ReloadConnections(callback) {
+    this.ctx.dbus.driver.invoke({
+      destination: 'org.freedesktop.NetworkManager',
+      path: '/org/freedesktop/NetworkManager/Settings',
+      'interface': 'org.freedesktop.NetworkManager.Settings',
+      member: 'ReloadConnections'
+    }, (err, data) => callback && callback(err, data))
+  }
+
   // 单例操作
   /**
    * 
