@@ -2,8 +2,9 @@ const DBusObject = require('../lib/dbus-object')
 const DBusProperties = require('../lib/dbus-properties')
 const DBusObjectManager = require('../lib/dbus-object-manager')
 const Advertisement = require('../bluez/advertisement')
-const GattSerialService = require('../bluez/gatt-serial-service')
-const GattSerialService = require('../bluez/services/gatt-serial-service')
+const GattSerialService = require('../bluez/serives/gatt-serial-service')
+const GattLocalAuthService = require('../bluez/serives/gatt-local-auth-service')
+const GattNetworkSettingService = require('../bluez/serives/gatt-network-setting-service')
 
 module.exports = () => {
   // name will be set when attaching this object
@@ -25,12 +26,22 @@ module.exports = () => {
 
   let service0 = new GattSerialService('service0', true)
   service0.on('WriteValue', (...args) => bluetooth.emit('Service0Write', ...args))
-  bluetooth.update = service0.rxIface.update.bind(service0.rxIface)
+  bluetooth.update0 = service0.rxIface.update.bind(service0.rxIface)
+
+  let service1 = new GattLocalAuthService('service1', true)
+  service1.on('WriteValue', (...args) => bluetooth.emit('Service1Write', ...args))
+  bluetooth.update1 = service1.rxIface.update.bind(service1.rxIface)
+
+  let service2 = new GattNetworkSettingService('service2', true)
+  service2.on('WriteValue', (...args) => bluetooth.emit('Service2Write', ...args))
+  bluetooth.update2 = service2.rxIface.update.bind(service2.rxIface)
 
   // gatt root
   let gatt = new DBusObject('gatt')
     .addInterface(new DBusObjectManager())
     .addChild(service0)
+    .addChild(service1)
+    .addChild(service2)
 
   bluetooth.addChild(gatt)
 

@@ -17,7 +17,7 @@ const GattService1 = require('./bluez/gatt-service1')
 const GattDescriptor1 = require('./bluez/gatt-descriptor1')
 const GattCharacteristic1 = require('./bluez/gatt-characteristic1')
 
-const GattSerialService = require('./bluez/gatt-serial-service')
+const GattSerialService = require('./bluez/serives/gatt-serial-service')
 
 const dbus = new DBus()
 
