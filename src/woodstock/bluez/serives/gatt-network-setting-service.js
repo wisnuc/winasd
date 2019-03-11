@@ -26,12 +26,12 @@ const xml = `\
 
 const definition = new DBusInterfaceDefinition(parseXml(xml).interface)
 
-class GattService1 extends EventEmitter {
+class GattService2 extends EventEmitter {
   constructor (props) {
     super()
     this.UUID = props.UUID
     this.Primary = !!props.Primary
-    Object.defineProperty(GattService1.prototype, 'Characteristics', {
+    Object.defineProperty(GattService2.prototype, 'Characteristics', {
       get () {
         let name = 'org.bluez.GattCharacteristic1'
         return this.dobj.children
@@ -42,8 +42,8 @@ class GattService1 extends EventEmitter {
   }
 }
 
-GattService1.prototype.definition = definition
-GattService1.prototype.name = definition.name
+GattService2.prototype.definition = definition
+GattService2.prototype.name = definition.name
 
 class GattNetworkSettingService extends DBusObject {
 
@@ -57,7 +57,7 @@ class GattNetworkSettingService extends DBusObject {
 
     this.addInterface(new DBusProperties())
     this.addInterface(new DBusObjectManager())
-    this.addInterface(new GattService1({
+    this.addInterface(new GattService2({
       UUID: '70000000-0182-406c-9221-0a6680bd0943',
       Primary: !!primary
     }))
