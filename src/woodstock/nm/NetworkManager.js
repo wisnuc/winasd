@@ -46,11 +46,11 @@ class NetworkManager extends DBusObject {
 
   mounted() {
     super.mounted()
-    this.dbus.driver.on('signal',  m => this.handleSignal(m))
     this.dbus.listen({
       sender: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager'
-    }, this.listener)
+    }, this.handleSignal)
+    this.dbus.driver.on('signal',  m => this.handleSignal(m))
     this.setting.mounted()
     this.accessPoint.mounted()
   }
