@@ -8,6 +8,7 @@ const NetWorkManager = require('../woodstock/nm/NetworkManager')
  * {
  *    action: 'scan'/'conn'/'net'/
  *    seq: 1000,
+ *    token: '', optional 
  *    body:{}
  * }
  */
@@ -77,10 +78,15 @@ class BLED extends require('events') {
    */
   handleNetworkSetting(type, packet) {
     if (packet.action === 'conn') {
-      this.nm.connect(packet.body.ssid, packet.body.pwd, (err, data) => {
-        if (err) return this.update(type, { seq: packet.seq, error, err })
-        return this.update(type, {seq: packet.seq, data})
-      })
+      if (this.ctx.localAuth.verify(packet.body.token)) {
+        this.nm.connect(packet.body.ssid, packet.body.pwd, (err, data) => {
+          if (err) return this.update(type, { seq: packet.seq, error: err })
+          return this.update(type, {seq: packet.seq, data})
+        })
+      } else {
+        let error = Object.assign(new Error('auth failed'), { code: 'EAUTH' })
+        return this.update(type, { seq: packet.seq, error })
+      }
     }
   }
 
