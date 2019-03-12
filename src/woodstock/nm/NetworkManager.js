@@ -7,7 +7,7 @@ const Setting = require('./Setting')
 const AccessPoint = require('./AccessPoint')
 const debug = require('debug')('ws:nm')
 const {
-  STRING, OBJECT_PATH, ARRAY, DICT_ENTRY, VARIANT, BYTE, BOOLEAN
+  STRING, OBJECT_PATH, ARRAY, DICT_ENTRY, VARIANT, BYTE, BOOLEAN, UINT32
 } = require('../lib/dbus-types')
 
 class NetworkManager extends DBusObject {
@@ -50,26 +50,48 @@ class NetworkManager extends DBusObject {
       sender: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager'
     }, () => {})
+    
     this.dbus.driver.on('signal',  m => this.handleSignal(m))
-    // this.dbus.driver.signal({
-    //   path: '/org/freedesktop/NetworkManager/Devices/2',
-    //   interface: 'org.freedesktop.NetworkManager.Device.Wireless',
-    //   member: 'AccessPointAdded',
-    //   signature: 'o',
-    //   body: [
-    //     new OBJECT_PATH(this.objectPath())
-    //   ]
-    // })
 
-    // this.dbus.driver.signal({
-    //   path: '/org/freedesktop/NetworkManager/Devices/2',
-    //   interface: 'org.freedesktop.NetworkManager.Device.Wireless',
-    //   member: 'AccessPointRemoved',
-    //   signature: 'o',
-    //   body: [
-    //     new OBJECT_PATH(this.objectPath())
-    //   ]
-    // })
+    this.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager',
+      interface: 'org.freedesktop.NetworkManager',
+      member: 'DeviceAdded',
+      signature: 'o',
+      body: [
+        new OBJECT_PATH(this.objectPath())
+      ]
+    })
+
+    this.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager',
+      interface: 'org.freedesktop.NetworkManager',
+      member: 'DeviceRemoved',
+      signature: 'o',
+      body: [
+        new OBJECT_PATH(this.objectPath())
+      ]
+    })
+
+    this.dbus.driver.signal({
+      path: '/org/freedesktop/NetworkManager',
+      interface: 'org.freedesktop.NetworkManager',
+      member: 'StateChanged',
+      signature: 'u',
+      body: [
+        new UINT32(70)
+      ]
+    })
+
+    this.addSignalHandle('/org/freedesktop/NetworkManager', (m) => {
+      if (m.member === 'DeviceAdded' || m.member === 'DeviceRemoved') {
+        return this.emit('DeviceChanged')
+      }
+      if (m.member === 'StateChanged') {
+        return this.emit('StateChanged')
+      }
+    })
+
     this.setting.mounted()
     this.accessPoint.mounted()
   }
@@ -410,10 +432,6 @@ class NetworkManager extends DBusObject {
         let wa = data.find(x => x.Ssid === ssid)
         if (wa) {
           this.AddAndActivateConnection(wa.Ssid, pwd, devices[0], wa.objectPath, (err, data) => {
-            console.log('************************')
-            console.log('connect add success')
-            console.log(err, data)
-            console.log('************************')
             if(err) return callback(Object.assign(err, { code: 'ECONN'}))
             let setting = data[0].value
             let activeConn = data[1].value

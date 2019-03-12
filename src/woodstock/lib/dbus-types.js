@@ -642,6 +642,10 @@ const STRUCT = DEC({ code: '(', align: 8 })(
       this.elems.push(elem)
       return this
     }
+
+    toJSON() {
+      return this.elems.map(e => e.toJSON())
+    }
   })
 
 const DICT_ENTRY = DEC({ code: '{', align: 8 })(

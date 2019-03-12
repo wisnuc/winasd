@@ -112,7 +112,10 @@ class BLED extends require('events') {
 
   update(type, data) {
     if (this.ble) {
+      console.log(this.ble[type.slice(0, 8)+ 'Update'], data)
+      
       data = Buffer.from(JSON.stringify(data))
+      
       this.ble[type.slice(0, 8)+ 'Update'](data)
     }
   }
