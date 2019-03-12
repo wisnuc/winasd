@@ -38,7 +38,7 @@ class Setting extends State {
   NM_STATE_CONNECTED_SITE = 60 
   NM_STATE_CONNECTED_GLOBAL = 70
   */
-class NetWorkManager extends require('event') {
+class NetWorkManager extends require('events') {
   constructor(ctx) {
     super()
     this.ctx = ctx
