@@ -26,7 +26,7 @@ class LocalAuth {
       this.timer = setTimeout(() => {
         this.state = 'Idle'
       }, 60 * 1000)
-      callback(null, [120, 203, 123, 102])
+      callback(null, { colors: [120, 203, 123, 102]})
     } else {
       callback(Object.assign(new Error('busy'), { code: 'EBUSY'}))
     }
@@ -45,7 +45,7 @@ class LocalAuth {
     }), 'utf8', 'hex')
     token += cipher.final('hex')
     // return
-    callback(null, token)
+    callback(null, { token })
     this.state = 'Idle'
   }
 

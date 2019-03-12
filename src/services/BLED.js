@@ -23,10 +23,6 @@ class BLED extends require('events') {
       this.dbus.attach('/org/bluez/bluetooth', this.ble)
       this.nm = new NetWorkManager()
       this.dbus.attach('/org/freedesktop/NetworkManager', this.nm)
-
-      setTimeout(() => {
-        this.nm.connect('Wisnuc-Air', 'wisnuc123456', (err, data) => console.log('******************', err, data))
-      }, 3 * 1000)
     })
     this.handlers = new Map()
   }
@@ -78,7 +74,7 @@ class BLED extends require('events') {
    */
   handleNetworkSetting(type, packet) {
     if (packet.action === 'conn') {
-      if (this.ctx.localAuth.verify(packet.body.token)) {
+      if (this.ctx.localAuth.verify(packet.token)) {
         this.nm.connect(packet.body.ssid, packet.body.pwd, (err, data) => {
           if (err) return this.update(type, { seq: packet.seq, error: err })
           return this.update(type, {seq: packet.seq, data})
