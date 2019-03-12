@@ -8,13 +8,15 @@ class AccessPoints {
     this.ctx = ctx
 
     this.handleFunc = m => { // TODO:  emit events here
-      if (m.member === 'ConnectionRemoved') {
-        console.log('ConnectionRemoved', m)
-      } else if (m.member === 'NewConnection') {
-        console.log('NewConnection', m)
+      if (m.member === 'AccessPointAdded') {
+        console.log('AccessPointAdded', m)
+        this.emit('NM_AP_AccessPointAdded')
+      } else if (m.member === 'AccessPointRemoved') {
+        console.log('AccessPointRemoved', m)
+        this.emit('NM_AP_AccessPointRemoved')
       }
     }
-    Object.defineProperty(this, 'device', {
+    Object.defineProperty(this, 'primDevice', {
       set (v) {
         if (this._device) {
           this.ctx.removeSignalHandle(this._device, this.handleFunc) // remove old handler
@@ -121,7 +123,7 @@ class AccessPoints {
     this.ctx.getWirelessDevices((err, data) => {
       if (err || !data.length) return console.log('AccessPoints mounted but no wireless device')
       let device = data[0]
-      this.device = device
+      this.primDevice = device
       console.log('AccessPoints mounted, start listening', device)
       this.ctx.dbus.driver.signal({
         path: device,

@@ -33,7 +33,6 @@ class NetWork extends require('event') {
     this.ctx = ctx
   }
 
-
   auth(token, callback) {
 
   }

@@ -9,8 +9,7 @@ const debug = require('debug')('ws:app')
 const DataStore = require('../lib/DataStore')
 
 const Upgrade = require('./upgrade')
-const Bled = require('./BLED')
-const Net = require('./net')
+const Bled = require('./bled')
 const LocalAuth = require('./localAuth')
 const Provision = require('./provision')
 const Winas = require('./winas')
@@ -147,34 +146,34 @@ class AppService {
 
   startProvision() {
     console.log('run in provision state')
-    this.net = new Net()
-    this.net.on('Inited', () => {
-      this.net.connect('Xiaomi_123', 'wisnuc123456', err => {
-        console.log('Net Module Connect: ', err)
-      })
-    })
-    this.net.on('Connected', () => {
-      this.provision = new Provision()
-      this.provision.on('Finished', () => {
-        this.provision.removeAllListeners()
-        this.provision.destroy()
-        this.provision = undefined
-      })
-    })
+    // this.net = new Net()
+    // this.net.on('Inited', () => {
+    //   this.net.connect('Xiaomi_123', 'wisnuc123456', err => {
+    //     console.log('Net Module Connect: ', err)
+    //   })
+    // })
+    // this.net.on('Connected', () => {
+    //   this.provision = new Provision()
+    //   this.provision.on('Finished', () => {
+    //     this.provision.removeAllListeners()
+    //     this.provision.destroy()
+    //     this.provision = undefined
+    //   })
+    // })
 
-    this.bled = new Bled()
-    this.bled.addHandler('CMD_SCAN', packet => {
-      // console.log(packet)
-      this.net.scan((err, list) => {
-        this.bled.update(err || list)
-      })
-    })
-    this.bled.addHandler('CMD_CONN', packet => {
-      // console.log('CMD_CONN', packet)
-      this.net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
-        this.bled.update(err || res)
-      })
-    })
+    // this.bled = new Bled()
+    // this.bled.addHandler('CMD_SCAN', packet => {
+    //   // console.log(packet)
+    //   this.net.scan((err, list) => {
+    //     this.bled.update(err || list)
+    //   })
+    // })
+    // this.bled.addHandler('CMD_CONN', packet => {
+    //   // console.log('CMD_CONN', packet)
+    //   this.net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
+    //     this.bled.update(err || res)
+    //   })
+    // })
   }
 
   startServices () {

@@ -85,10 +85,10 @@ class NetworkManager extends DBusObject {
 
     this.addSignalHandle('/org/freedesktop/NetworkManager', (m) => {
       if (m.member === 'DeviceAdded' || m.member === 'DeviceRemoved') {
-        return this.emit('DeviceChanged')
+        return this.emit('NM_DeviceChanged')
       }
       if (m.member === 'StateChanged') {
-        return this.emit('StateChanged')
+        return this.emit('NM_StateChanged')
       }
     })
 
