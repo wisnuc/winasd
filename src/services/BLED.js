@@ -50,9 +50,9 @@ class BLED extends require('events') {
       return this.update(type, { code: 'ENOTJSON', message: 'packet error'})
     }
 
-    if (type === 'Service1Write') return this.handleLocalAuth(type, data)
-    if (type === 'Service2Write') return this.handleNetworkSetting(type, data)
-    if (type === 'Service3Write') return this.handleCloud(type, data)
+    if (type === 'Service1Write') return this.handleLocalAuth(type, packet)
+    if (type === 'Service2Write') return this.handleNetworkSetting(type, packet)
+    if (type === 'Service3Write') return this.handleCloud(type, packet)
     console.log('invalid action: ', packet.action)
   }
 
