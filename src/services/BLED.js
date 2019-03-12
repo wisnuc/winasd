@@ -65,7 +65,7 @@ class BLED extends require('events') {
       })
     } else if (packet.action == 'auth') {
       this.ctx.localAuth.auth(packet.body, (err, data) => {
-        if (err) return this.update(type, { seq: packet.seq, error, err })
+        if (err) return this.update(type, { seq: packet.seq, error: err })
         return this.update(type, {seq: packet.seq, data})
       })
     }
