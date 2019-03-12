@@ -3,16 +3,15 @@ const {
 } = require('../lib/dbus-types')
 
 class Setting extends require('events') {
-
   constructor(ctx) {
     super()
     this.ctx = ctx
     this.ctx.addSignalHandle('/org/freedesktop/NetworkManager/Settings', m => {
       if (m.member === 'ConnectionRemoved') {
-        console.log('ConnectionRemoved', m)
+        this.ctx.emit('NM_ST_ConnectionRemoved', m.body[0].value)
         this.ctx.emit('NM_ST_ConnectionChanged')
       } else if (m.member === 'NewConnection') {
-        console.log('NewConnection', m)
+        this.ctx.emit('NM_ST_ConnectionAdded', m.body[0].value)
         this.ctx.emit('NM_ST_ConnectionChanged')
       }
     })

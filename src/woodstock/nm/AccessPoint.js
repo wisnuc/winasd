@@ -9,11 +9,9 @@ class AccessPoints {
 
     this.handleFunc = m => { // TODO:  emit events here
       if (m.member === 'AccessPointAdded') {
-        console.log('AccessPointAdded', m)
-        this.ctx.emit('NM_AP_AccessPointAdded')
+        this.ctx.emit('NM_AP_AccessPointAdded', m.body[0].value)
       } else if (m.member === 'AccessPointRemoved') {
-        console.log('AccessPointRemoved', m)
-        this.ctx.emit('NM_AP_AccessPointRemoved')
+        this.ctx.emit('NM_AP_AccessPointRemoved', m.body[0].value)
       }
     }
     Object.defineProperty(this, 'primDevice', {
