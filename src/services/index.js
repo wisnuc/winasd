@@ -146,8 +146,6 @@ class AppService {
     console.log('run in normal state')
     this.localAuth = new LocalAuth(this)
     this.bled = new Bled(this)
-
-    this.bled = new Bled(this)
     this.bled.on('connect', () => {
       this.net = new NetworkManager(this)
       this.net.on('started', state => {
