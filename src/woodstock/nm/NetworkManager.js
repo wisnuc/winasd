@@ -51,25 +51,25 @@ class NetworkManager extends DBusObject {
       path: '/org/freedesktop/NetworkManager'
     }, () => {})
     this.dbus.driver.on('signal',  m => this.handleSignal(m))
-    this.dbus.driver.signal({
-      path: '/org/freedesktop/NetworkManager/Devices/2',
-      interface: 'org.freedesktop.NetworkManager.Device.Wireless',
-      member: 'AccessPointAdded',
-      signature: 'o',
-      body: [
-        new OBJECT_PATH(this.objectPath())
-      ]
-    })
+    // this.dbus.driver.signal({
+    //   path: '/org/freedesktop/NetworkManager/Devices/2',
+    //   interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+    //   member: 'AccessPointAdded',
+    //   signature: 'o',
+    //   body: [
+    //     new OBJECT_PATH(this.objectPath())
+    //   ]
+    // })
 
-    this.dbus.driver.signal({
-      path: '/org/freedesktop/NetworkManager/Devices/2',
-      interface: 'org.freedesktop.NetworkManager.Device.Wireless',
-      member: 'AccessPointRemoved',
-      signature: 'o',
-      body: [
-        new OBJECT_PATH(this.objectPath())
-      ]
-    })
+    // this.dbus.driver.signal({
+    //   path: '/org/freedesktop/NetworkManager/Devices/2',
+    //   interface: 'org.freedesktop.NetworkManager.Device.Wireless',
+    //   member: 'AccessPointRemoved',
+    //   signature: 'o',
+    //   body: [
+    //     new OBJECT_PATH(this.objectPath())
+    //   ]
+    // })
     this.setting.mounted()
     this.accessPoint.mounted()
   }
@@ -413,12 +413,12 @@ class NetworkManager extends DBusObject {
             console.log('************************')
             console.log('connect add success')
             console.log(err, data)
+            console.log('************************')
             if(err) return callback(Object.assign(err, { code: 'ECONN'}))
             let setting = data[0].value
             let activeConn = data[1].value
             let count = 0
             let handleFunc = m => {
-              console.log('***X**X*X*X**X*X**X*X**X*X**X*X')
               if (m.member !== 'Updated') return
               if (++count == 3) {
                 this.removeSignalHandle(setting, handleFunc)
