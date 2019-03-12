@@ -55,7 +55,7 @@ class LocalAuth {
       let data = decipher.update(token, 'hex', 'utf8')
       data += decipher.final('utf8')
       data = JSON.parse(data)
-      if (!data.ctime || Number.isInteger(data.ctime) || Date.now() - data.ctime > 1000 * 60 * 60) {
+      if (!data.ctime || !Number.isInteger(data.ctime) || Date.now() - data.ctime > 1000 * 60 * 60) {
         return false
       }
       return true
