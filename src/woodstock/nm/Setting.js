@@ -10,10 +10,10 @@ class Setting extends require('events') {
     this.ctx.addSignalHandle('/org/freedesktop/NetworkManager/Settings', m => {
       if (m.member === 'ConnectionRemoved') {
         console.log('ConnectionRemoved', m)
-        this.emit('NM_ST_ConnectionChanged')
+        this.ctx.emit('NM_ST_ConnectionChanged')
       } else if (m.member === 'NewConnection') {
         console.log('NewConnection', m)
-        this.emit('NM_ST_ConnectionChanged')
+        this.ctx.emit('NM_ST_ConnectionChanged')
       }
     })
   }
