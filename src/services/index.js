@@ -149,6 +149,7 @@ class AppService {
     this.bled.on('connect', () => {
       this.net = new NetworkManager(this)
       this.net.on('started', state => {
+        console.log('NetworkManager Started: ', state)
         if (state !== 70) {
           console.log('Device Network Disconnect', state)
         }
