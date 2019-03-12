@@ -31,15 +31,21 @@ class NetWork extends require('event') {
   constructor(ctx) {
     super()
     this.ctx = ctx
+    this.ctx.bled.on('NM_DeviceChanged', (...args) => this.emit('NM_DeviceChanged', ...args))
+    this.ctx.bled.on('NM_StateChanged', (...args) => this.emit('NM_StateChanged', ...args))
+    this.ctx.bled.on('NM_ST_ConnectionChanged', (...args) => this.emit('NM_ST_ConnectionChanged', ...args))
+    this.ctx.bled.on('NM_AP_AccessPointAdded', (...args) => this.emit('NM_AP_AccessPointAdded', ...args))
+    this.ctx.bled.on('NM_AP_AccessPointRemoved', (...args) => this.emit('NM_AP_AccessPointRemoved', ...args))
   }
 
-  auth(token, callback) {
+  handleDeviceChanged() {
 
   }
 
-  connect(ssid, pwd, callback) {
+  handleStateChanged() {
 
   }
+
 }
 
 module.exports = NetWork
