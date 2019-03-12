@@ -18,11 +18,14 @@ class BLED extends require('events') {
     super()
     this.ctx = ctx
     this.dbus = new DBus()
+    
+    // TODO:  dbus disconnect??? connect failed??
     this.dbus.on('connect', () => {
       this.ble = Bluetooth()
       this.dbus.attach('/org/bluez/bluetooth', this.ble)
       this.nm = new NetWorkManager()
       this.dbus.attach('/org/freedesktop/NetworkManager', this.nm)
+      this.emit('connect')
     })
     this.handlers = new Map()
   }

@@ -180,7 +180,7 @@ class NetworkManager extends DBusObject {
       path: '/org/freedesktop/NetworkManager',
       'interface': 'org.freedesktop.NetworkManager',
       member: 'state'
-    }, (err, data) => callback && callback(err, data))
+    }, (err, data) => callback && callback(err, data&&data[0].value))
   }
 
   //Return the object path of the network device referenced by its IP interface name. 

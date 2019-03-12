@@ -8,6 +8,7 @@ const debug = require('debug')('ws:app')
 
 const DataStore = require('../lib/DataStore')
 
+const NetworkManager = require('./network')
 const Upgrade = require('./upgrade')
 const Bled = require('./bled')
 const LocalAuth = require('./localAuth')
@@ -118,6 +119,50 @@ class AppService {
     debug('FROM WINAS MESSAGE:\n', message)
   }
 
+  startProvision() {
+    console.log('run in provision state')
+    this.bled = new Bled(this)
+    this.bled.on('connect', () => {
+      this.net = new NetworkManager(this)
+      this.net.on('started', state => {
+        if (state !== 70) {
+          this.net.connect('Xiaomi_123', 'wisnuc123456', (err, data) => {
+            console.log('Net Module Connect: ', err, data)
+          })
+        }
+      })
+      this.net.on('connect', () => {
+        this.provision = new Provision()
+        this.provision.on('Finished', () => {
+          this.provision.removeAllListeners()
+          this.provision.destroy()
+          this.provision = undefined
+        })
+      })
+    })
+  }
+
+  startServices () {
+    console.log('run in normal state')
+    this.localAuth = new LocalAuth(this)
+    this.bled = new Bled(this)
+
+    this.bled = new Bled(this)
+    this.bled.on('connect', () => {
+      this.net = new NetworkManager(this)
+      this.net.on('started', state => {
+        if (state !== 70) {
+          console.log('Device Network Disconnect', state)
+        }
+      })
+      this.net.on('connect', () => {
+        process.nextTick(() => this.channel && this.channel.connect())
+      })
+    })
+    this.winas = new Winas(this)
+    this.channel = new Channel(this)
+  }
+
   isBeta() {
     return true
   }
@@ -144,99 +189,8 @@ class AppService {
       .catch(e => (this.operation = null, callback(e)))
   }
 
-  startProvision() {
-    console.log('run in provision state')
-    // this.net = new Net()
-    // this.net.on('Inited', () => {
-    //   this.net.connect('Xiaomi_123', 'wisnuc123456', err => {
-    //     console.log('Net Module Connect: ', err)
-    //   })
-    // })
-    // this.net.on('Connected', () => {
-    //   this.provision = new Provision()
-    //   this.provision.on('Finished', () => {
-    //     this.provision.removeAllListeners()
-    //     this.provision.destroy()
-    //     this.provision = undefined
-    //   })
-    // })
-
-    // this.bled = new Bled()
-    // this.bled.addHandler('CMD_SCAN', packet => {
-    //   // console.log(packet)
-    //   this.net.scan((err, list) => {
-    //     this.bled.update(err || list)
-    //   })
-    // })
-    // this.bled.addHandler('CMD_CONN', packet => {
-    //   // console.log('CMD_CONN', packet)
-    //   this.net.connect('Xiaomi_123', 'wisnuc123456', (err, res) => {
-    //     this.bled.update(err || res)
-    //   })
-    // })
-  }
-
-  startServices () {
-    console.log('run in normal state')
-    this.localAuth = new LocalAuth(this)
-    this.bled = new Bled(this)
-    /*
-      this.net = new Net()
-      this.net.on('Connected', () => {
-        this.channel && this.channel.connect()
-      })
-      this.bled = new Bled(this)
-      this.bled.addHandler('CMD_SCAN', packet => {
-        console.log('CMD_SCAN', packet)
-        this.net.scan((err, list) => {
-          this.bled.update(err ? { error: err} : { data: list})
-        })
-      })
-      this.bled.addHandler('CMD_CONN', packet => {
-        console.log('CMD_CONN', packet)
-        this.net.connect(packet.ssid, packet.password, (err, res) => {
-          this.bled.update(err ? { error: err} : { data: res})
-        })
-      })
-
-      this.bled.addHandler('CMD_NET', packet => {
-        console.log('CMD_NET', packet)
-        this.net.netInfo((err, res) => {
-          this.bled.update(err ? { error: err} : { data: res })
-        })
-      })
-
-      this.bled.on('Connected', () => {
-        if (this.deviceSN) { // update sn
-          this.bled.setStationId(Buffer.from(this.deviceSN.slice(-12)))
-        }
-        // update status
-        this.bled.setStationStatus(this.userStore.data ? 2: 1)
-      })
-    */
-    this.winas = new Winas(this)
-    this.channel = new Channel(this)
-  }
-
   getUpgradeList(cb) {
     return this.upgrade.list(cb)
-  }
-
-  view() {
-    return {
-      net: this.net && this.net.view(),
-      ble: this.bled && this.bled.view(),
-      upgrade: this.upgrade && this.upgrade.view(),
-      operation: this.operation,
-      winas: this.winas && this.winas.view(),
-      provision: this.provision && this.provision.view(),
-      channel: this.channel && this.channel.view(),
-      device: Device.hardwareInfo()
-    }
-  }
-
-  destroy() {
-    if (this.winas) this.winas.destroy()
   }
 
   updateDeviceName (user, name, callback) {
@@ -267,6 +221,23 @@ class AppService {
       })
     }
     return process.nextTick(() => callback(new Error('Winas State Error')))
+  }
+
+  view() {
+    return {
+      net: this.net && this.net.view(),
+      ble: this.bled && this.bled.view(),
+      upgrade: this.upgrade && this.upgrade.view(),
+      operation: this.operation,
+      winas: this.winas && this.winas.view(),
+      provision: this.provision && this.provision.view(),
+      channel: this.channel && this.channel.view(),
+      device: Device.hardwareInfo()
+    }
+  }
+
+  destroy() {
+    if (this.winas) this.winas.destroy()
   }
 }
 
