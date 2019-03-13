@@ -60,10 +60,7 @@ class Bluetooth extends DBusObject {
 
   mounted() {
     super.mounted()
-    this.dbus.listen({
-      sender: 'org.bluez',
-      path: '/org/bluez'
-    }, this.listen.bind(this))
+    this.dbus.driver.on('signal',  m => this.listen(m))
   }
 
   listen(m) {
@@ -72,9 +69,7 @@ class Bluetooth extends DBusObject {
 }
 
 
-module.exports = Bluetooth
-
-const tmp = () => {
+module.exports = () => {
   // name will be set when attaching this object
   let bluetooth = new DBusObject()
 
