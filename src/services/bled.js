@@ -76,6 +76,8 @@ class BLED extends require('events') {
     this._ble.on('Service1Write', this.handleBleMessage.bind(this, 'Service1Write')) // LocalAuth
     this._ble.on('Service2Write', this.handleBleMessage.bind(this, 'Service2Write')) // NetSetting
     this._ble.on('Service3Write', this.handleBleMessage.bind(this, 'Service3Write')) // Cloud
+    this._ble.on('BLE_DEVICE_DISCONNECTED', () => {})
+    this._ble.on('BLE_DEVICE_CONNECTED', () => {})
   }
 
   get ble() { return this._ble }
