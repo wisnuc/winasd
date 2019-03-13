@@ -106,7 +106,6 @@ class AppService {
       data: this.userStore.data
     })
     // update ble advertisement
-    //this.bled&&this.bled.setStationStatus(this.userStore.data ? 2: 1)
   }
 
   /**

@@ -1,6 +1,7 @@
 const Bluetooth = require('../woodstock/winas/bluetooth')
 const DBus = require('../woodstock/lib/dbus')
 const NetWorkManager = require('../woodstock/nm/NetworkManager')
+const { STRING } = require('../woodstock/lib/dbus-types')
 
 /**
  * definition bluetooth packet
@@ -26,8 +27,24 @@ class BLED extends require('events') {
       this.nm = new NetWorkManager()
       this.dbus.attach('/org/freedesktop/NetworkManager', this.nm)
       this.emit('connect')
+      this.initProperties()
     })
     this.handlers = new Map()
+  }
+
+  initProperties() {
+    this.ble.dbus.driver.invoke({
+      destination: 'org.bluez',
+      path: '/org/bluez/hci0',
+      'interface': 'org.freedesktop.DBus.Properties',
+      member: 'GetAll',
+      body:[
+        new STRING('org.bluez.Adapter1')
+      ]
+    }, (err, data) => {
+      console.log('BLED  + initProperties', err)
+      console.log(data)
+    })
   }
 
   set ble(x) {
@@ -125,7 +142,7 @@ class BLED extends require('events') {
   view() {
     return {
       state: this.ble ? 'Started' : 'Starting',
-      address: 'XXXXX:XXXX:XXXX:XXXXX'
+      address: 'XX:XX:XX:XX:XX:XX'
     }
   }
 
@@ -138,12 +155,6 @@ class BLED extends require('events') {
       this.ble[type.slice(0, 8)+ 'Update'](data)
     }
   }
-
-  setStationId (id) {}
-
-  setStationStatus (status) {}
-
-  sendMsg (msg) {}
 }
 
 module.exports = BLED
