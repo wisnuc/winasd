@@ -87,7 +87,7 @@ class DBusDriver extends EventEmitter {
     this.connect((err, socket) => {})
   }
 
-  connect () {
+  connect (callback) {
     const socket = net.createConnection('/run/dbus/system_bus_socket')
     const handleError = err => {
       socket.removeAllListeners()

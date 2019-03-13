@@ -33,17 +33,38 @@ class BLED extends require('events') {
   }
 
   initProperties() {
+    if (!this.ble) return setTimeout(() => this.initProperties(), 1000)
     this.ble.dbus.driver.invoke({
       destination: 'org.bluez',
       path: '/org/bluez/hci0',
       'interface': 'org.freedesktop.DBus.Properties',
       member: 'GetAll',
+      signature: 's',
       body:[
         new STRING('org.bluez.Adapter1')
       ]
     }, (err, data) => {
-      console.log('BLED  + initProperties', err)
-      console.log(data)
+      if (err) return setTimeout(() => this.initProperties(), 1000)
+      let info = {}
+      data[0].elems.forEach(x => {
+        let name = x.elems[0].value
+        let esig = x.elems[1].esig
+        let value = undefined
+        switch (esig) {
+          case 's':
+          case 'b':
+          case 'u':
+            value = x.elems[1].elems[1].value
+            break
+          case 'as':
+            value = x.elems[1].elems[1].elems.map(x => x.value)
+          default:
+            break
+        }
+        info[name] = value
+      })
+      this.info = info
+      console.log(this.info)
     })
   }
 
