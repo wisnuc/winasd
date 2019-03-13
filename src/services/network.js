@@ -55,7 +55,10 @@ class NetWorkManager extends require('events') {
       this.emit('started', this.hasOwnProperty('state') ? this.state : err ? 0 : data) 
       if (this.hasOwnProperty('state')) return
       if (err) return setTimeout(() => this.initState(), 1000)
-      this.state = data || 0  
+      this.state = data || 0
+    })
+    this.ctx.bled.nm.addressDatas((err, data) => {
+      if (data) this.addresses = data
     })
   }
 
@@ -76,11 +79,16 @@ class NetWorkManager extends require('events') {
     console.log('handleStateChanged', state)
     this.state = state
     if (state === 70) this.emit('connect')
+    // FIXME: race
+    this.ctx.bled.nm.addressDatas((err, data) => {
+      if (data) this.addresses = data
+    })
   }
 
   view() {
     return {
-      state: this.state
+      state: this.state,
+      addresses: this.addresses
     }
   }
 }

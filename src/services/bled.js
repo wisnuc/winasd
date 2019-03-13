@@ -163,7 +163,8 @@ class BLED extends require('events') {
   view() {
     return {
       state: this.ble ? 'Started' : 'Starting',
-      address: 'XX:XX:XX:XX:XX:XX'
+      address: this.info && this.info.Address || 'XX:XX:XX:XX:XX:XX',
+      info: this.info
     }
   }
 

@@ -478,6 +478,18 @@ class NetworkManager extends DBusObject {
       })
     })
   }
+
+  addressDatas (callback) {
+    this.ActiveConnections((err, data) => {
+      if (err || !data.length) return callback(null, [])
+      let count = data.length
+      let addresses = []
+      data.forEach(x => this.ActiveConnectionAddressData(activeConn, (err, data) => {
+        if (!err) addresses.push(data)
+        if (--count === 0) return callback(null, addresses)
+      }))
+    })
+  }
 }
 
 module.exports = NetworkManager
