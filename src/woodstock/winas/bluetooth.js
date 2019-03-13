@@ -64,12 +64,25 @@ class Bluetooth extends DBusObject {
   }
 
   listen(m) {
-    console.log(m)
+    // device add / remove
+    if (m.path.startsWith('/org/bluez/hci0/') && m.member === 'PropertiesChanged') {
+      if (m.body[0].value === 'org.bluez.Device1') {
+        let mess = body[1].elems
+        let tmp = mess.find(x => x.sig = '{sv}' && x.elems[0].value === 'Connected')
+        if (tmp) {
+          console.log('BLE DEVICE: ', tmp)
+          console.log(tmp.elems[1].elems[1].value === 0 ? 'BLE_DEVICE_DISCONNECTED' : 'BLE_DEVICE_CONNECTED')
+          this.emit(tmp.elems[1].elems[1].value === 0 ? 'BLE_DEVICE_DISCONNECTED' : 'BLE_DEVICE_CONNECTED')
+        }
+      }
+    }
   }
 }
 
+module.exports = Bluetooth
 
-module.exports = () => {
+/*
+const a = () => {
   // name will be set when attaching this object
   let bluetooth = new DBusObject()
 
@@ -122,3 +135,4 @@ module.exports = () => {
 
   return bluetooth
 }
+*/
