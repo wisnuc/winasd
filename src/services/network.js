@@ -72,7 +72,7 @@ class NetWorkManager extends require('events') {
   }
 
   handleConnectionChanaged() {
-
+    console.log('handleConnectionChanaged')
   }
 
   handleStateChanged(state) {
