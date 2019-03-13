@@ -2,6 +2,12 @@ const {
   STRING, OBJECT_PATH, ARRAY, DICT_ENTRY, VARIANT, BYTE, BOOLEAN
 } = require('../lib/dbus-types')
 
+/**
+ * registe accesspoint change signals
+ * events:
+ * NM_AP_AccessPointAdded
+ * NM_AP_AccessPointRemoved
+ */
 class AccessPoints {
 
   constructor(ctx) {

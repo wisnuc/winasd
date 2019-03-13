@@ -23,7 +23,6 @@ class Authed extends State {
 
 class Setting extends State {
   enter(ssid, pwd) {
-
   }
 }
 
