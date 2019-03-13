@@ -73,9 +73,9 @@ class Bluetooth extends DBusObject {
   listen(m) {
     // device add / remove
     if (m.path.startsWith('/org/bluez/hci0/') && m.interface === 'org.bluez.Device1') {
-      if (mess.changed && mess.changed.hasOwnProperty('ServicesResolved')) {
-        console.log(mess.changed.ServicesResolved ? 'BLE_DEVICE_CONNECTED' : 'BLE_DEVICE_DISCONNECTED')
-        this.emit(mess.changed.ServicesResolved ? 'BLE_DEVICE_CONNECTED' : 'BLE_DEVICE_DISCONNECTED')
+      if (m.changed && m.changed.hasOwnProperty('ServicesResolved')) {
+        console.log(m.changed.ServicesResolved ? 'BLE_DEVICE_CONNECTED' : 'BLE_DEVICE_DISCONNECTED')
+        this.emit(m.changed.ServicesResolved ? 'BLE_DEVICE_CONNECTED' : 'BLE_DEVICE_DISCONNECTED')
       }
     }
   }
