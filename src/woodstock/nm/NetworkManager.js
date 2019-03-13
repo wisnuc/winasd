@@ -484,7 +484,7 @@ class NetworkManager extends DBusObject {
       if (err || !data.length) return callback(null, [])
       let count = data.length
       let addresses = []
-      data.forEach(x => this.ActiveConnectionAddressData(activeConn, (err, data) => {
+      data.forEach(x => this.ActiveConnectionAddressData(x, (err, data) => {
         if (!err) addresses.push(data)
         if (--count === 0) return callback(null, addresses)
       }))
