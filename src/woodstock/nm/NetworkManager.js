@@ -439,6 +439,13 @@ class NetworkManager extends DBusObject {
             let count = 0
             let handleFunc = m => {
               if (m.member !== 'Updated') return
+              this.ActiveConnections((err, data) => {
+                if (count >= 3) return
+                if (err || !data.find(x => x === activeConn)) {
+                  this.removeSignalHandle(setting, handleFunc)
+                  return callback(Object.assign(err || new Error('connect failed'), { code: 'ECONN'}))
+                }
+              })
               if (++count == 3) {
                 this.removeSignalHandle(setting, handleFunc)
                 this.ActiveConnections((err, data) => {
@@ -451,6 +458,7 @@ class NetworkManager extends DBusObject {
                 })
               }
             }
+            this.addSignalHandle(setting, handleFunc)
             this.addSignalHandle(setting, handleFunc)
           })
         } else {

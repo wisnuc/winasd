@@ -13,7 +13,6 @@ const { STRING } = require('../woodstock/lib/dbus-types')
  *    body:{}
  * }
  */
-
 class BLED extends require('events') {
   constructor(ctx) {
     super()
@@ -22,7 +21,7 @@ class BLED extends require('events') {
     
     // TODO:  dbus disconnect??? connect failed??
     this.dbus.on('connect', () => {
-      this.ble = new Bluetooth()
+      this.ble = new Bluetooth(this.ctx.userStore.data, this.ctx.deviceSN)
       this.dbus.attach('/org/bluez/bluetooth', this.ble)
       this.nm = new NetWorkManager()
       this.dbus.attach('/org/freedesktop/NetworkManager', this.nm)
@@ -76,8 +75,8 @@ class BLED extends require('events') {
     this._ble.on('Service1Write', this.handleBleMessage.bind(this, 'Service1Write')) // LocalAuth
     this._ble.on('Service2Write', this.handleBleMessage.bind(this, 'Service2Write')) // NetSetting
     this._ble.on('Service3Write', this.handleBleMessage.bind(this, 'Service3Write')) // Cloud
-    this._ble.on('BLE_DEVICE_DISCONNECTED', () => {})
-    this._ble.on('BLE_DEVICE_CONNECTED', () => {})
+    this._ble.on('BLE_DEVICE_DISCONNECTED', () => this.emit('BLE_DEVICE_DISCONNECTED')) // Device Disconnected
+    this._ble.on('BLE_DEVICE_CONNECTED', () => this.emit('BLE_DEVICE_CONNECTED')) // Device Connected
   }
 
   get ble() { return this._ble }
@@ -130,7 +129,7 @@ class BLED extends require('events') {
    * data: {token}/{ssid, pwd}
    */
   handleNetworkSetting(type, packet) {
-    if (packet.action === 'conn') {
+    if (packet.action === 'addAndActive') {
       if (this.ctx.localAuth.verify(packet.token)) {
         this.nm.connect(packet.body.ssid, packet.body.pwd, (err, data) => {
           if (err) return this.update(type, { seq: packet.seq, error: err })

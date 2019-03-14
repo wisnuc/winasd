@@ -12,16 +12,19 @@ const GattNetworkSettingService = require('../bluez/serives/gatt-network-setting
  * BLE_DEVICE_CONNECTED
  */
 class Bluetooth extends DBusObject {
-  constructor(name) {
+  constructor(bound, sn) {
     super(name)
+    let b = bound.data ? 0x02 : 0x01
+    let s = sn ? sn.slice(-4) : ''
     let adv = new Advertisement('advertisement0', {
       Type: 'peripheral',
-      LocalName: 'wisnuc',
+      LocalName: 'wisnuc' + s,
+      ServiceData: ['wisnuc', ['ay',[0x01]]],
       // ServiceUUIDs: ['180D', '180F'],
       // 1805 CTS
       // ServiceUUIDs: ['80000000-0182-406c-9221-0a6680bd0943'],
       ManufacturerData: [
-        [0xffff, ['ay', [0x55, 0x33, 0x55, 0x55]]]
+        [0xffff, ['ay', [b]]]
       ],
       IncludeTxPower: true
     })

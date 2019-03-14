@@ -26,7 +26,7 @@ class LocalAuth {
       this.timer = setTimeout(() => {
         this.state = 'Idle'
       }, 60 * 1000)
-      callback(null, { colors: [120, 203, 123, 102]})
+      callback(null, { colors: ['120', '203', '123', '102']})
     } else {
       callback(Object.assign(new Error('busy'), { code: 'EBUSY'}))
     }
