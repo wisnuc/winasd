@@ -459,7 +459,6 @@ class NetworkManager extends DBusObject {
               }
             }
             this.addSignalHandle(setting, handleFunc)
-            this.addSignalHandle(setting, handleFunc)
           })
         } else {
           return callback(Object.assign(new Error('wifi not found'), { code: 'ENOINT' }))
