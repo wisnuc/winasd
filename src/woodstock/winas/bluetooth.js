@@ -18,12 +18,15 @@ class Bluetooth extends DBusObject {
     let s = sn ? sn.slice(-4) : ''
     let adv = new Advertisement('advertisement0', {
       Type: 'peripheral',
-      LocalName: 'wisnuc' + s,
-      // ServiceUUIDs: ['180D', '180F'],
+      LocalName: 'Wisnuc-' + s,
+      // ServiceUUIDs: ['LOCAL-AUTH', 'CLOUD'],
       // 1805 CTS
       // ServiceUUIDs: ['80000000-0182-406c-9221-0a6680bd0943'],
       ManufacturerData: [
         [0xffff, ['ay', [b]]]
+      ],
+      ServiceData: [
+        ['9999', ['ay', [0x00, 0x01, 0x02, 0x03, 0x04]]]
       ],
       IncludeTxPower: true
     })
