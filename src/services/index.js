@@ -212,7 +212,7 @@ class AppService {
         this.updateDeviceOwner({
           id: user.id,
           username: user.username,
-          phone: username.phoneNumber
+          phone: user.username
         }, err => {
           callback(err, user)
         })
