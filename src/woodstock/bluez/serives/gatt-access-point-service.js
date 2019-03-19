@@ -19,7 +19,7 @@ class GattAccessPointService extends DBusObject {
 
     this.txIface1 = new WriteNotifyChar({
       UUID: '20000002-0182-406c-9221-0a6680bd0943',
-      readable: true
+      indicate: true
     })
 
     this.txIface1.on('WriteValue', (...args) => this.emit('Char1WriteValue', ...args))
@@ -34,7 +34,7 @@ class GattAccessPointService extends DBusObject {
 
     this.txIface2 = new WriteNotifyChar({
       UUID: '20000003-0182-406c-9221-0a6680bd0943',
-      readable: true
+      indicate: true
     })
 
     this.txIface2.on('WriteValue', (...args) => this.emit('Char2WriteValue', ...args))
