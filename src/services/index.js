@@ -205,8 +205,10 @@ class AppService {
   }
 
   updateDeviceName (user, name, callback) {
-    Device.setDeviceName(name, (err, data) 
-      => (callback(err, data), this.deviceUpdate()))
+    Device.setDeviceName(name, (err, data) => {
+      callback(err, data)
+      this.deviceUpdate()
+    })
   }
 
   // send mqtt message to cloud if device update
