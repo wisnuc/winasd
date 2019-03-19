@@ -56,12 +56,6 @@ class AppService {
 
     this.upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
 
-    if (fs.existsSync(path.join(Config.storage.roots.p, Config.storage.files.provision))) {
-      this.startServices()
-    } else {
-      this.startProvision()
-    }
-
     Object.defineProperty(this, 'winas', {
       get() {
         return this._winas
@@ -89,6 +83,14 @@ class AppService {
         })
       }
     })
+
+
+    if (fs.existsSync(path.join(Config.storage.roots.p, Config.storage.files.provision))) {
+      this.startServices()
+    } else {
+      this.startProvision()
+    }
+
   }
 
   // update user persistent store
