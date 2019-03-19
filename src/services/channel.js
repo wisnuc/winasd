@@ -118,7 +118,7 @@ class Connected extends State {
       username: user.username,
       phone: user.phoneNumber
     } : null
-    this.ctx.ctx.updateDeviceOwner(this.user, () => {})
+    this.ctx.ctx.updateOwner(this.user, () => {})
     this.connection = connection
     this.connection.on('message', this.ctx.handleIotMsg.bind(this.ctx))
     this.connection.on('close', () => this.setState('Failed', new Error('close')))

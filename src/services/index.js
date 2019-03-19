@@ -7,6 +7,7 @@ const child = require('child_process')
 const debug = require('debug')('ws:app')
 
 const DataStore = require('../lib/DataStore')
+const State = require('../lib/state')
 
 const NetworkManager = require('./network')
 const Upgrade = require('./upgrade')
@@ -15,7 +16,7 @@ const LocalAuth = require('./localAuth')
 const Provision = require('./provision')
 const Winas = require('./winas')
 const Channel = require('./channel')
-const reqBind = require('../lib/bind')
+const { reqBind } = require('../lib/lifecycle')
 const Device = require('../lib/device')
 
 class AppService {
@@ -44,11 +45,12 @@ class AppService {
       tmpDir: path.join(Config.storage.dirs.tmpDir)
     })
 
-    this.userStore.on('Update', this.handleBoundUserUpdate.bind(this))
+    this.userStore.on('Update', this.handleOwnerUpdate.bind(this))
 
     try {
       this.deviceSN = fs.readFileSync(path.join(Config.storage.dirs.certDir, 'deviceSN')).toString().trim()
-    } catch(e) { 
+    } catch(e) {
+      //FIXME:
       console.log('no deviceSN')
     }
 
@@ -59,57 +61,62 @@ class AppService {
     } else {
       this.startProvision()
     }
-  }
 
-  get winas() {
-    return this._winas
-  }
+    Object.defineProperty(this, 'winas', {
+      get() {
+        return this._winas
+      },
+      set(x) {
+        if(this._winas) {
+          this._winas.removeAllListeners()
+          this._winas.destroy()
+        }
+        this._winas = x
+        this._winas.on('Started', this.handleWinasStarted.bind(this))
+        this._winas.on('message', this.handleWinasMessage.bind(this))
+      }
+    })
 
-  set winas(x) {
-    if(this._winas) {
-      this._winas.removeAllListeners()
-      this._winas.destroy()
-    }
-    this._winas = x
-    this._winas.on('Started', this.handleWinasStarted.bind(this))
-    this._winas.on('message', this.handleWinasMessage.bind(this))
-  }
-
-  get token() {
-    return this._token
-  }
-
-  set token(x) {
-    this._token = x
-    this.winas && this.winas.sendMessage({
-      type: 'token',
-      data: x
+    Object.defineProperty(this, 'token', {
+      get() {
+        return this._token
+      },
+      set(x) {
+        this._token = x
+        this.winas && this.winas.sendMessage({
+          type: 'token',
+          data: x
+        })
+      }
     })
   }
 
-  updateDeviceOwner(user, callback) {
+  // update user persistent store
+  updateOwner(user, callback) {
     this.userStore.save(user, callback)
   }
 
+  // send token&&owner to winas while Winas started
   handleWinasStarted() {
     this.winas.sendMessage({
       type: 'token',
       data: this.token
     })
 
-    this.handleBoundUserUpdate()
+    this.handleOwnerUpdate()
   }
 
-  handleBoundUserUpdate() {
+  // send owner to winas
+  handleOwnerUpdate() {
     this.userStore.data && this.winas.sendMessage({
       type: 'boundUser',
       data: this.userStore.data
     })
-    // update ble advertisement
+    //TODO: update ble advertisement
   }
 
   /**
-   * 
+   * handle messages form winas
    * @param {object} message 
    * message.type
    * message.data .....
@@ -118,6 +125,7 @@ class AppService {
     debug('FROM WINAS MESSAGE:\n', message)
   }
 
+  // starting in provision mode
   startProvision() {
     console.log('run in provision state')
     this.bled = new Bled(this)
@@ -141,6 +149,7 @@ class AppService {
     })
   }
 
+  // starting in normal mode
   startServices () {
     console.log('run in normal state')
     this.localAuth = new LocalAuth(this)
@@ -160,15 +169,18 @@ class AppService {
     this.winas = new Winas(this)
     this.channel = new Channel(this)
   }
-
+  
+  // return current software mode
   isBeta() {
     return true
   }
 
+  // return node path
   nodePath () {
     return this.config.system.globalNode ? 'node' : '/mnt/winas/node/bin/node'
   }
 
+  // start winas
   appStart (callback) {
     if (!this.winas) return process.nextTick(() => callback(EApp404))
     if (this.operation) return process.nextTick(() => callback(ERace))
@@ -178,6 +190,7 @@ class AppService {
       .catch(e => (this.operation = null, callback(e)))
   }
 
+  // stop winas
   appStop (callback) {
     if (!this.winas) return process.nextTick(() => callback(EApp404))
     if (this.operation) return process.nextTick(() => callback(ERace))
@@ -192,10 +205,11 @@ class AppService {
   }
 
   updateDeviceName (user, name, callback) {
-    Device.setDeviceName(name, (err, data) => (callback(err, data), this.deviceUpdate()))
-
+    Device.setDeviceName(name, (err, data) 
+      => (callback(err, data), this.deviceUpdate()))
   }
 
+  // send mqtt message to cloud if device update
   deviceUpdate () {
     this.channel && this.deviceSN && this.channel.publish(`device/${ this.deviceSN }/info`, JSON.stringify({ 
       lanIp: Device.networkInterface().address,
@@ -209,7 +223,7 @@ class AppService {
       return reqBind(encrypted, this.token, (err, data) => {
         if (err) return callback(err)
         let user = data.data
-        this.updateDeviceOwner({
+        this.updateOwner({
           id: user.id,
           username: user.username,
           phone: user.username

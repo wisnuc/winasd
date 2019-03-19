@@ -54,7 +54,6 @@ class State {
 
 }
 
-
 class Stopped extends State {
 
   start () {
@@ -136,7 +135,11 @@ class Started extends State {
   }
 
   exit () {
-    if (this.winas) this.winas.removeAllListeners()
+    if (this.winas) {
+      this.winas.removeAllListeners()
+      this.winas.on('error', () => {})
+      if (!this.winas.killed) this.winas.kill()
+    }
     this.winas = undefined
     this.users = undefined
     super.exit()
