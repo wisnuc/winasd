@@ -24,7 +24,7 @@ class GattAccessPointService extends DBusObject {
 
     this.txIface1.on('WriteValue', (...args) => this.emit('Char1WriteValue', ...args))
 
-    this.char1Update = this.txIface1.update
+    this.char1Update = this.txIface1.update.bind(this.txIface1)
 
     this.txObj1 = new DBusObject('char1')
       .addInterface(new DBusProperties())
@@ -39,7 +39,7 @@ class GattAccessPointService extends DBusObject {
 
     this.txIface2.on('WriteValue', (...args) => this.emit('Char2WriteValue', ...args))
 
-    this.char2Update = this.txIface2.update
+    this.char2Update = this.txIface2.update.bind(this.txIface2)
 
     this.txObj2 = new DBusObject('char2')
       .addInterface(new DBusProperties())
