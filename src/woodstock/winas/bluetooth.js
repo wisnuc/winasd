@@ -77,11 +77,11 @@ class Bluetooth extends DBusObject {
       .addInterface(new DBusObjectManager())
       .addChild(service3)
 
-    let NICGATT = new DBusObject('gatt2')
+    let NICGATT = new DBusObject('gatt3')
       .addInterface(new DBusObjectManager())
       .addChild(NICService)
 
-    let APGATT = new DBusObject('gatt2')
+    let APGATT = new DBusObject('gatt4')
       .addInterface(new DBusObjectManager())
       .addChild(APService)
 
