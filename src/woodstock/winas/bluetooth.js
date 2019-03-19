@@ -39,15 +39,15 @@ class Bluetooth extends DBusObject {
     let NICService = new GattNICService('NICService', true)
     NICService.on('Char1WriteValue', (...args) => this.emit('NICChar1Write', ...args))
     NICService.on('Char2WriteValue', (...args) => this.emit('NICChar2Write', ...args))
-    this.NICChar1Update = NICService.rxIface.char1Update.bind(NICService.rxIface)
-    this.NICChar2Update = NICService.rxIface.char2Update.bind(NICService.rxIface)
+    this.NICChar1Update = NICService.char1Update.bind(NICService.rxIface)
+    this.NICChar2Update = NICService.char2Update.bind(NICService.rxIface)
 
     //200 AP
     let APService = new GattAccessPointService('APService', true)
     APService.on('Char1WriteValue', (...args) => this.emit('APChar1Write', ...args))
     APService.on('Char2WriteValue', (...args) => this.emit('APChar2Write', ...args))
-    this.APChar1Update = APService.rxIface.char1Update.bind(APService.rxIface)
-    this.APChar2Update = APService.rxIface.char2Update.bind(APService.rxIface)
+    this.APChar1Update = APService.char1Update.bind(APService.rxIface)
+    this.APChar2Update = APService.char2Update.bind(APService.rxIface)
 
     //600 LocalAuth
     let service1 = new GattLocalAuthService('service1', true)
