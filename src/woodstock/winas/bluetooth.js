@@ -36,14 +36,14 @@ class Bluetooth extends DBusObject {
     this.addChild(adv)
 
     //100 NIC
-    let NICService = new GattNICService('NICService', true)
+    let NICService = new GattNICService('service4', true)
     NICService.on('Char1WriteValue', (...args) => this.emit('NICChar1Write', ...args))
     NICService.on('Char2WriteValue', (...args) => this.emit('NICChar2Write', ...args))
     this.NICChar1Update = NICService.char1Update.bind(NICService.rxIface)
     this.NICChar2Update = NICService.char2Update.bind(NICService.rxIface)
 
     //200 AP
-    let APService = new GattAccessPointService('APService', true)
+    let APService = new GattAccessPointService('service5', true)
     APService.on('Char1WriteValue', (...args) => this.emit('APChar1Write', ...args))
     APService.on('Char2WriteValue', (...args) => this.emit('APChar2Write', ...args))
     this.APChar1Update = APService.char1Update.bind(APService.rxIface)

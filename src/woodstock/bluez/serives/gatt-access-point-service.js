@@ -41,7 +41,7 @@ class GattAccessPointService extends DBusObject {
 
     this.char2Update = this.txIface2.update
 
-    this.txObj2 = new DBusObject('char1')
+    this.txObj2 = new DBusObject('char2')
       .addInterface(new DBusProperties())
       .addInterface(this.txIface2)
 
