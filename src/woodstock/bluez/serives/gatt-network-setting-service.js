@@ -23,7 +23,7 @@ class GattNetworkSettingService extends DBusObject {
 
     this.addInterface(new DBusProperties())
     this.addInterface(new DBusObjectManager())
-    this.addInterface(new GattService2({
+    this.addInterface(new GattService({
       UUID: '70000000-0182-406c-9221-0a6680bd0943',
       Primary: !!primary
     }))
