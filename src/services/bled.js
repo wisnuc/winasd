@@ -77,6 +77,8 @@ class BLED extends require('events') {
     this._ble.on('Service3Write', this.handleBleMessage.bind(this, 'Service3Write')) // Cloud
     this._ble.on('BLE_DEVICE_DISCONNECTED', () => this.emit('BLE_DEVICE_DISCONNECTED')) // Device Disconnected
     this._ble.on('BLE_DEVICE_CONNECTED', () => this.emit('BLE_DEVICE_CONNECTED')) // Device Connected
+    this._ble.on('NICChar1Write', this.handleBleMessage.bind(this, 'NICChar1Write'))
+    this._ble.on('NICChar2Write', this.handleBleMessage.bind(this, 'NICChar2Write'))
   }
 
   get ble() { return this._ble }
@@ -95,7 +97,7 @@ class BLED extends require('events') {
     return this._nm
   }
 
-  handleBleMessage(type, data, opts) {
+  handleBleMessage(type, data) {
     let packet
     try {
       packet = JSON.parse(data)
@@ -106,6 +108,8 @@ class BLED extends require('events') {
     if (type === 'Service1Write') return this.handleLocalAuth(type, packet)
     if (type === 'Service2Write') return this.handleNetworkSetting(type, packet)
     if (type === 'Service3Write') return this.handleCloud(type, packet)
+    if (type === 'NICChar1Write') return this.handleNICChar1Write(type, packet)
+    if (type === 'NICChar2Write') return this.handleNICChar2Write(type, packet)
     console.log('invalid action: ', packet.action)
   }
 
@@ -146,6 +150,18 @@ class BLED extends require('events') {
 
   }
 
+  handleNICChar1Write(type, data) {
+    if (packet.action === 'list') {
+      
+    }
+  }
+
+  // push model
+  handleNICChar2Write(type, data) {
+
+  }
+
+
   addHandler(type, callback){
     if (this.handlers.has(type)) {
       this.handlers.get(type).push(callback)
@@ -171,11 +187,10 @@ class BLED extends require('events') {
 
   update(type, data) {
     if (this.ble) {
-      console.log(this.ble[type.slice(0, 8)+ 'Update'], data)
-      
+      console.log(this.ble[type.slice(0, type.length - 5)+ 'Update'], data)
       data = Buffer.from(JSON.stringify(data))
       
-      this.ble[type.slice(0, 8)+ 'Update'](data)
+      this.ble[type.slice(0, type.length - 5) + 'Update'](data)
     }
   }
 }

@@ -1,55 +1,51 @@
-const EventEmitter = require('events')
-
-const debug = require('debug')('gatt-localauth')
-
 const DBusObject = require('../../lib/dbus-object')
 const DBusProperties = require('../../lib/dbus-properties')
 const DBusObjectManager = require('../../lib/dbus-object-manager')
-const ReadNotifyChar = require('../gatt-read-notify-char')
-const WriteReadChar = require('../gatt-write-read-char')
+const WriteNotifyChar = require('../gatt-write-indicate-char')
 const { OBJECT_PATH, ARRAY } = require('../../lib/dbus-types')
 const GattService = require('../gatt-service1')()
 
-class GattLocalAuthService extends DBusObject {
+class GattAccessPointService extends DBusObject {
 
   constructor (name, primary) {
     super (name)
-    this.sessionId = 0
-    this.started = false
-    this.pending = false
-    this.incoming = ''
-    this.outgoing = ''
 
     this.addInterface(new DBusProperties())
     this.addInterface(new DBusObjectManager())
     this.addInterface(new GattService({
-      UUID: '60000000-0182-406c-9221-0a6680bd0943',
+      UUID: '20000000-0182-406c-9221-0a6680bd0943',
       Primary: !!primary
     }))
 
-    this.rxIface = new ReadNotifyChar({ 
-      UUID: '60000002-0182-406c-9221-0a6680bd0943',
-      indicate: true
-    })
-
-    this.rxObj = new DBusObject('char0')
-      .addInterface(new DBusProperties())
-      .addInterface(this.rxIface)
-
-    this.addChild(this.rxObj)
-
-    this.txIface = new WriteReadChar({
-      UUID: '60000003-0182-406c-9221-0a6680bd0943',
+    this.txIface1 = new WriteNotifyChar({
+      UUID: '20000002-0182-406c-9221-0a6680bd0943',
       readable: true
     })
 
-    this.txIface.on('WriteValue', (...args) => this.emit('WriteValue', ...args))
+    this.txIface1.on('WriteValue', (...args) => this.emit('Char1WriteValue', ...args))
 
-    this.txObj = new DBusObject('char1')
+    this.char1Update = txIface1.update
+
+    this.txObj1 = new DBusObject('char1')
       .addInterface(new DBusProperties())
-      .addInterface(this.txIface)
+      .addInterface(this.txIface1)
 
-    this.addChild(this.txObj)
+    this.addChild(this.txObj1)
+
+    this.txIface2 = new WriteNotifyChar({
+      UUID: '20000003-0182-406c-9221-0a6680bd0943',
+      readable: true
+    })
+
+    this.txIface2.on('WriteValue', (...args) => this.emit('Char2WriteValue', ...args))
+
+    this.char2Update = txIface2.update
+
+    this.txObj2 = new DBusObject('char1')
+      .addInterface(new DBusProperties())
+      .addInterface(this.txIface2)
+
+    this.addChild(this.txObj2)
 
     this.listener = this.listen.bind(this)
 
@@ -102,4 +98,4 @@ class GattLocalAuthService extends DBusObject {
   } 
 }
 
-module.exports = GattLocalAuthService
+module.exports = GattAccessPointService

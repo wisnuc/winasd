@@ -9,41 +9,7 @@ const ReadNotifyChar = require('../gatt-read-notify-char')
 const WriteReadChar = require('../gatt-write-read-char')
 const { OBJECT_PATH, ARRAY } = require('../../lib/dbus-types')
 
-const DBusInterfaceDefinition = require('../../lib/dbus-interface-definition')
-const parseXml = require('../../lib/parse-xml')
-
-// Device is a client-specific property
-// Includes not implemented according to bluez doc
-const xml = `\
-<interface name="org.bluez.GattService1">
-  <property name="UUID" type="s" />
-  <property name="Primary" type="b" />
-  <property name="Device" type="o" />
-  <property name="Characteristics" type="ao" />
-  <property name="Includes" type="ao" />
-</interface>
-`
-
-const definition = new DBusInterfaceDefinition(parseXml(xml).interface)
-
-class GattService2 extends EventEmitter {
-  constructor (props) {
-    super()
-    this.UUID = props.UUID
-    this.Primary = !!props.Primary
-    Object.defineProperty(GattService2.prototype, 'Characteristics', {
-      get () {
-        let name = 'org.bluez.GattCharacteristic1'
-        return this.dobj.children
-          .filter(obj => obj.ifaces.find(iface => iface.name === name))
-          .reduce((a, c) => [...a, c.objectPath()], [])
-      }
-    })
-  }
-}
-
-GattService2.prototype.definition = definition
-GattService2.prototype.name = definition.name
+const GattService = require('../gatt-service1')()
 
 class GattNetworkSettingService extends DBusObject {
 
@@ -63,7 +29,7 @@ class GattNetworkSettingService extends DBusObject {
     }))
 
     this.rxIface = new ReadNotifyChar({ 
-      UUID: '70000001-0182-406c-9221-0a6680bd0943',
+      UUID: '70000002-0182-406c-9221-0a6680bd0943',
       indicate: true
     })
 
@@ -74,7 +40,7 @@ class GattNetworkSettingService extends DBusObject {
     this.addChild(this.rxObj)
 
     this.txIface = new WriteReadChar({
-      UUID: '70000002-0182-406c-9221-0a6680bd0943',
+      UUID: '70000003-0182-406c-9221-0a6680bd0943',
       readable: true
     })
 

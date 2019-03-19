@@ -5,6 +5,8 @@ const Advertisement = require('../bluez/advertisement')
 const GattSerialService = require('../bluez/serives/gatt-serial-service')
 const GattLocalAuthService = require('../bluez/serives/gatt-local-auth-service')
 const GattNetworkSettingService = require('../bluez/serives/gatt-network-setting-service')
+const GattNICService = require('../bluez/serives/gatt-nic-service')
+const GattAccessPointService = require('../bluez/serives/gatt-access-point-service')
 
 /**
  * events
@@ -32,6 +34,20 @@ class Bluetooth extends DBusObject {
     })
 
     this.addChild(adv)
+
+    //100 NIC
+    let NICService = new GattNICService('NICService', true)
+    NICService.on('Char1WriteValue', (...args) => this.emit('NICChar1Write', ...args))
+    NICService.on('Char2WriteValue', (...args) => this.emit('NICChar2Write', ...args))
+    this.NICChar1Update = NICService.rxIface.char1Update.bind(NICService.rxIface)
+    this.NICChar2Update = NICService.rxIface.char2Update.bind(NICService.rxIface)
+
+    //200 AP
+    let APService = new GattAccessPointService('APService', true)
+    APService.on('Char1WriteValue', (...args) => this.emit('APChar1Write', ...args))
+    APService.on('Char2WriteValue', (...args) => this.emit('APChar2Write', ...args))
+    this.APChar1Update = APService.rxIface.char1Update.bind(APService.rxIface)
+    this.APChar2Update = APService.rxIface.char2Update.bind(APService.rxIface)
 
     //600 LocalAuth
     let service1 = new GattLocalAuthService('service1', true)
@@ -61,10 +77,20 @@ class Bluetooth extends DBusObject {
       .addInterface(new DBusObjectManager())
       .addChild(service3)
 
+    let NICGATT = new DBusObject('gatt2')
+      .addInterface(new DBusObjectManager())
+      .addChild(NICService)
+
+    let APGATT = new DBusObject('gatt2')
+      .addInterface(new DBusObjectManager())
+      .addChild(APService)
+
     this
       .addChild(gatt)
       .addChild(gatt1)
       .addChild(gatt2)
+      .addChild(NICGATT)
+      .addChild(APGATT)
   }
 
   mounted() {
