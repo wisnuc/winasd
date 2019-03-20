@@ -9,14 +9,18 @@ const {
  * NM_AP_AccessPointRemoved
  */
 class AccessPoints {
-
   constructor(ctx) {
     this.ctx = ctx
-
+    this.aps = []
     this.handleFunc = m => { // TODO:  emit events here
       if (m.member === 'AccessPointAdded') {
+        this.aps.push(m.body[0].eval())
         this.ctx.emit('NM_AP_AccessPointAdded', m.body[0].value)
       } else if (m.member === 'AccessPointRemoved') {
+        let index = this.aps.findIndex(x => x === m.body[0].eval())
+        if (index !== -1) {
+          this.aps = [...this.aps.slice(0,index), ...this.aps(index + 1)]
+        }
         this.ctx.emit('NM_AP_AccessPointRemoved', m.body[0].value)
       }
     }

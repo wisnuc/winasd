@@ -44,25 +44,7 @@ class BLED extends require('events') {
       ]
     }, (err, data) => {
       if (err) return setTimeout(() => this.initProperties(), 1000)
-      let info = {}
-      data[0].elems.forEach(x => {
-        let name = x.elems[0].value
-        let esig = x.elems[1].esig
-        let value = undefined
-        switch (esig) {
-          case 's':
-          case 'b':
-          case 'u':
-            value = x.elems[1].elems[1].value
-            break
-          case 'as':
-            value = x.elems[1].elems[1].elems.map(x => x.value)
-          default:
-            break
-        }
-        info[name] = value
-      })
-      this.info = info
+      this.info = data[0].eval().reduce((o, [name, kv]) => Object.assign(o, { [name]: kv[1] }), {})
       console.log(this.info)
     })
   }
@@ -150,15 +132,17 @@ class BLED extends require('events') {
 
   }
 
-  handleNICChar1Write(type, data) {
+  handleNICChar1Write(type, packet) {
     if (packet.action === 'list') {
-      
+      return this.update(type, {seq: packet.seq, data:{ devices:this.nm.devices }})
     }
   }
 
   // push model
-  handleNICChar2Write(type, data) {
-
+  handleNICChar2Write(type, packet) {
+    if (packet.action === 'list') {
+      return this.update(type, {seq: packet.seq, data:{ devices:this.nm.devices }})
+    }
   }
 
 

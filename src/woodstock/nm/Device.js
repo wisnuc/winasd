@@ -102,11 +102,23 @@ class Device {
       let d = data[0].eval().reduce((o, [name, kv]) => Object.assign(o, { [name]: kv[1] }), {})
       let index = this.devices.findIndex(x => x.objPath === objPath)
       if (index !== -1) {
-        let device = Object.assign({}, this.devices[index], d)
-        this.devices = [...this.devices.slice(0, index), device, ...this.devices.slice(index + 1)]
-        return callback(null)
-      }
-      return callback(Object.assign(new Error('device not found'), { code: 'EUPDATE' }))
+        let device = Object.assign({}, this.devices[index], d, { Ipv4Info: undefined })
+        if (device.State === 100 && device.Ip4Config && device.Ip4Config !== '/') {
+          // get Ipv4Info
+          this.ctx.GetAll(device.Ip4Config, 'org.freedesktop.NetworkManager.IP4Config', (err, data) => {
+            if (aborted) return
+            if (err) return callback(null)
+            let info = data[0].eval().reduce((o, [name, kv]) => Object.assign(o, { [name]: kv[1] }), {})
+            device.Ipv4NetInfo = info
+            this.devices = [...this.devices.slice(0, index), device, ...this.devices.slice(index + 1)]
+            return callback(null)
+          })
+        } else {
+          this.devices = [...this.devices.slice(0, index), device, ...this.devices.slice(index + 1)]
+          return callback(null)
+        }
+      } else
+        return callback(Object.assign(new Error('device not found'), { code: 'EUPDATE' }))
     })
     return cancel
   }
@@ -124,6 +136,7 @@ class Device {
           interface: 'org.freedesktop.NetworkManager.Device',
           member: 'StateChanged'
         })
+        this.newJob('StateChanged', { objPath: d.objPath }) // do reload to sync state
       })
       return callback(null)
     })
