@@ -19,7 +19,7 @@ class AccessPoints {
       } else if (m.member === 'AccessPointRemoved') {
         let index = this.aps.findIndex(x => x === m.body[0].eval())
         if (index !== -1) {
-          this.aps = [...this.aps.slice(0,index), ...this.aps(index + 1)]
+          this.aps = [...this.aps.slice(0,index), ...this.aps.slice(index + 1)]
         }
         this.ctx.emit('NM_AP_AccessPointRemoved', m.body[0].value)
       }
