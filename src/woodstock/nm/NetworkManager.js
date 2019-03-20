@@ -23,14 +23,14 @@ class NetworkManager extends DBusObject {
 
     Object.defineProperty(this, 'devices', {
       get() {
-        this.device.devices
+        return this.device && this.device.devices
       }
     })
 
 
     Object.defineProperty(this, 'aps', {
       get() {
-        this.accessPoint.aps
+        return this.accessPoint && this.accessPoint.aps
       }
     })
   }

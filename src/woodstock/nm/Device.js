@@ -33,10 +33,10 @@ class Device {
       get(){
         return this._devices || []
       },
-      set(x) {
+      set(v) {
         this.devices.forEach(x => this.ctx.removeSignalHandle(x.objPath, this.handleFunc))
-        this._devices = x
-        x.forEach(x => this.ctx.addSignalHandle(x.objPath, this.handleFunc))
+        this._devices = v
+        v.forEach(x => this.ctx.addSignalHandle(x.objPath, this.handleFunc))
       }
     })
     this.jobs = []
@@ -129,7 +129,7 @@ class Device {
     this.initDevices((err, data) => {
       if (aborted) return
       if (err) return callback(err)
-      this.devices = data
+      this.devices = data || []
       data.forEach(d => {
         this.ctx.dbus.driver.signal({
           path: d.objPath,
@@ -169,7 +169,7 @@ class Device {
       if (err) {
         this.error = Object.assign(err, { code: 'EINIT' })
       } else {
-        this.devices = data
+        this.devices = data || []
         data.forEach(d => {
           this.ctx.dbus.driver.signal({
             path: d.objPath,
