@@ -5,6 +5,7 @@ const DBusProperties = require('../lib/dbus-properties')
 const DBusObjectManager = require('../lib/dbus-object-manager')
 const Setting = require('./Setting')
 const AccessPoint = require('./AccessPoint')
+const Device = require('./Device')
 const debug = require('debug')('ws:nm')
 const {
   STRING, OBJECT_PATH, ARRAY, DICT_ENTRY, VARIANT, BYTE, BOOLEAN, UINT32
@@ -18,6 +19,7 @@ class NetworkManager extends DBusObject {
     this.handleSignalMap = new Map()
     this.setting = new Setting(this)
     this.accessPoint = new AccessPoint(this)
+    this.device = new Device(this)
   }
 
   handleSignal(m) {
@@ -95,6 +97,7 @@ class NetworkManager extends DBusObject {
 
     this.setting.mounted()
     this.accessPoint.mounted()
+    this.device.mounted()
   }
 
   Enable(enable, callback) {
@@ -111,7 +114,7 @@ class NetworkManager extends DBusObject {
   }
 
   // Get the list of all network devices.
-  GetAllDevices() {
+  GetAllDevices(callback) {
     this.dbus.driver.invoke({
       destination: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager',
