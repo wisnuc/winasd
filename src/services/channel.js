@@ -111,14 +111,15 @@ class Connecting extends State {
 }
 
 class Connected extends State {
-  enter (connection, token, user) {
+  enter (connection, token, device) {
     this.ctx.ctx.token = token
-    this.user = user.owner ? {
-      id: user.owner,
-      username: user.username,
-      phone: user.phoneNumber
+    this.user = device.owner ? {
+      id: device.owner,
+      username: device.username,
+      phone: device.phoneNumber
     } : null
-    this.ctx.ctx.updateOwner(this.user, () => {})
+    // this.ctx.ctx.updateOwner(this.user, () => {})
+    
     this.connection = connection
     this.connection.on('message', this.ctx.handleIotMsg.bind(this.ctx))
     this.connection.on('close', () => this.setState('Failed', new Error('close')))
@@ -130,6 +131,8 @@ class Connected extends State {
     this.timer = setInterval(() => {
       this.publish(`device/${ this.ctx.sn }/token`, '') // refresh token
     }, 1000 * 60 * 60 * 24)
+    
+    this.ctx.emit('ChannelConnected', device, this.user)
   }
 
   publish(...args) {

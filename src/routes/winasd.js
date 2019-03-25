@@ -15,7 +15,15 @@ module.exports = (appService) =>{
 
   router.post('/bind', (req, res, next) => {
     if (!req.body.encrypted) return res.status(400).end()
-    appService.boundDevice(req.body.encrypted, (err, data) => {
+    appService.requestBind(req.body.encrypted, (err, data) => {
+      if (err) return res.status(400).json(err)
+      res.success(data)
+    })
+  })
+
+  router.post('/unbind', (req, res, next) => {
+    if (!req.body.encrypted) return res.status(400).end()
+    appService.requestUnbind(req.body.encrypted, (err, data) => {
       if (err) return res.status(400).json(err)
       res.success(data)
     })
