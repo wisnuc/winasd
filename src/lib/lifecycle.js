@@ -15,13 +15,14 @@ const createSignature = (op, callback) => {
   let signature
   try {
     let sign = crypto.createSign('SHA256')
-    sign.write(JSON.stringify({
+    let raw = JSON.stringify({
       lifecycle: fs.readFileSync(path.join(storageConf.dirs.device, lifecycle)).toString().trim(),
       op
-    }))
+    })
+    sign.write(raw)
     sign.end()
     signature = sign.sign(fs.readFileSync(path.join(certFolder, pkeyName)), 'hex')
-    return callback(null, signature)
+    return callback(null, { signature, raw })
   } catch(e) {
     return callback(e)
   }
@@ -30,10 +31,10 @@ const createSignature = (op, callback) => {
 module.exports.createSignature = createSignature
 
 module.exports.reqUnbind = (encrypted, token, callback) => {
-  createSignature('unbind', (err, signature) => {
+  createSignature('unbind', (err, { signature, raw }) => {
     if (err) return callback(err)
     request.post(`${ Config.pipe.baseURL }/s/v1/station/unbind`)
-      .send({ signature, encrypted })
+      .send({ signature, encrypted, raw })
       .set('Authorization', token)
       .then(res => {
         callback(null, res.body)
@@ -44,10 +45,10 @@ module.exports.reqUnbind = (encrypted, token, callback) => {
 }
 
 module.exports.reqBind = (encrypted, token, callback) => {
-  createSignature('bind', (err, signature) => {
+  createSignature('bind', (err, { signature, raw }) => {
     if (err) return callback(err)
     request.post(`${ Config.pipe.baseURL }/s/v1/station/bind`)
-      .send({ signature, encrypted })
+      .send({ signature, encrypted, raw })
       .set('Authorization', token)
       .then(res => {
         callback(null, res.body)

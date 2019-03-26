@@ -271,7 +271,7 @@ class Bound extends BaseState {
    * @param {object} message - pipe message 
    */
   requestUnbind(encrypted, callback) {
-    if (unbindFlag) return callback(new Error('error state'))
+    if (this.unbindFlag) return callback(new Error('error state'))
     if (!this.ctx.token) return callback(new Error('network error'))
     this.unbindFlag = true
     reqUnbind(encrypted, this.ctx.token, (err, data) => {
