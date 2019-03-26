@@ -186,8 +186,7 @@ class Unbind extends BaseState {
         username: data.data.username,
         phone: data.data.username
       }
-      process.nextTick(() => callback(null, user))
-      this.setState('Binding', user)
+      this.setState('Binding', user, callback)
     })
   }
 
@@ -199,10 +198,11 @@ class Unbind extends BaseState {
 }
 
 class Binding extends BaseState {
-  enter(user) {
+  enter(user, callback = () => {}) {
     this.start(user)
-      .then(() => this.setState('Bound'))
-      .catch(e => this.setState('Failed', Object.assign(e, { code: 'EBINDING' })))
+      .then(() => (process.nextTick(() => callback(null,user)), this.setState('Bound')))
+      .catch(e => (process.nextTick(() => callback(Object.assign(new Error('clean drive failed'), 
+        { code: 'EBINDING' }))), this.setState('Failed', Object.assign(e, { code: 'EBINDING' }))))
   }
 
   async start(user) {
