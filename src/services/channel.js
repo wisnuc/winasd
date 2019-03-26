@@ -131,7 +131,7 @@ class Connected extends State {
     this.timer = setInterval(() => {
       this.publish(`device/${ this.ctx.sn }/token`, '') // refresh token
     }, 1000 * 60 * 60 * 24)
-    
+
     this.ctx.emit('ChannelConnected', device, this.user)
   }
 
@@ -232,9 +232,9 @@ class Channel extends require('events') {
           return this.reqCommand(data, formatError('not found'))
         }
       } else
-        this.ctx.winas.sendMessage({ type: 'pipe', data })
+        this.ctx.winas && this.ctx.winas.sendMessage({ type: 'pipe', data })
     } else if (topic.endsWith('users')) {
-      this.ctx.winas.sendMessage({ type: 'userUpdate', data})
+      this.ctx.winas && this.ctx.winas.sendMessage({ type: 'userUpdate', data})
     } else if (topic.endsWith('token')){
       this.ctx.token = data.token
     } else {
