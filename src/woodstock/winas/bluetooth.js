@@ -18,7 +18,7 @@ class Bluetooth extends DBusObject {
     super()
     let b = bound ? 0x02 : 0x01
     let s = sn ? sn.slice(-4) : ''
-    let adv = new Advertisement('advertisement0', {
+    this.adv = new Advertisement('advertisement0', {
       Type: 'peripheral',
       LocalName: 'Wisnuc-' + s,
       // ServiceUUIDs: ['LOCAL-AUTH', 'CLOUD'],
@@ -33,7 +33,7 @@ class Bluetooth extends DBusObject {
       IncludeTxPower: true
     })
 
-    this.addChild(adv)
+    this.addChild(this.adv)
 
     //100 NIC
     let NICService = new GattNICService('service4', true)
@@ -91,6 +91,22 @@ class Bluetooth extends DBusObject {
       .addChild(gatt2)
       .addChild(NICGATT)
       .addChild(APGATT)
+  }
+
+  updateAdv(bound, sn) {
+    let b = bound ? 0x02 : 0x01
+    let s = sn ? sn.slice(-4) : ''
+    this.adv.updateAdv({
+      Type: 'peripheral',
+      LocalName: 'Wisnuc-' + s,
+      ManufacturerData: [
+        [0xffff, ['ay', [b]]]
+      ],
+      ServiceData: [
+        ['9999', ['ay', [0x00, 0x01, 0x02, 0x03, 0x04]]]
+      ],
+      IncludeTxPower: true
+    })
   }
 
   mounted() {

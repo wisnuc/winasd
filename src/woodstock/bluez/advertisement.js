@@ -10,7 +10,8 @@ class Advertisement extends DBusObject {
     super(name)
     this.addInterface(new DBusProperties())
     this.addInterface(new DBusObjectManager())
-    this.addInterface(new LEAdvertisement1(props))
+    this.le = new LEAdvertisement1(props)
+    this.addInterface(le)
     this.listener = this.listen.bind(this)
   }
 
@@ -47,6 +48,14 @@ class Advertisement extends DBusObject {
         console.log(err)
       })
     })
+  }
+
+  updateAdv(props) {
+    let le = new LEAdvertisement1(props)
+    this.removeInterface(this.le)
+    this.le = le
+    this.addInterface(this.le)
+    this.register()
   }
 
   listen (m) {

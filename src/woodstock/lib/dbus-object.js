@@ -64,6 +64,12 @@ class DBusObject extends EventEmitter {
     return this
   }
 
+  removeInterface(iface) {
+    let index = this.ifaces.findIndex(x => x == iface)
+    if (index !== -1) this.ifaces.splice(index, 1)
+    return this
+  }
+
   // add an dbus object as a child
   addChild (child) {
     child.attach(this)

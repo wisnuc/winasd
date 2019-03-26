@@ -49,6 +49,10 @@ class BLED extends require('events') {
     })
   }
 
+  updateAdv() {
+    this.ble && this.ble.updateAdv(ctx.userStore && ctx.userStore.data || false, ctx.deviceSN)
+  }
+
   set ble(x) {
     if (this._ble) {
       this._ble.removeAllListeners()

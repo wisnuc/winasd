@@ -211,6 +211,8 @@ class Binding extends BaseState {
     await new Promise((resolve, reject) => this.ctx.userStore.save(user, err => err ? reject(err) : resolve()))
     // refresh lifecycle
     await new Promise((res, rej) => refresh(err => err ? rej(err) : res()))
+    // update ble advertisement
+    this.ctx.bled.updateAdv()
   }
 
   async cleanVolumeAsync() {
@@ -241,6 +243,8 @@ class Unbinding extends BaseState {
     await new Promise((resolve, reject) => this.ctx.userStore.save(null, err => err ? reject(err) : resolve()))
     // refresh lifecycle
     await new Promise((res, rej) => refresh(err => err ? rej(err) : res()))
+    // update ble advertisement
+    this.ctx.bled.updateAdv()
   }
 }
 
@@ -296,7 +300,7 @@ class Failed extends BaseState {
   }
 }
 
-//TODO: update ble advertisement
+
 class AppService {
   constructor() {
     this.config = Config
