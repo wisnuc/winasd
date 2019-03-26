@@ -50,7 +50,7 @@ class BLED extends require('events') {
   }
 
   updateAdv() {
-    this.ble && this.ble.updateAdv(ctx.userStore && ctx.userStore.data || false, ctx.deviceSN)
+    this.ble && this.ble.updateAdv(this.ctx.userStore && this.ctx.userStore.data || false, this.ctx.deviceSN)
   }
 
   set ble(x) {

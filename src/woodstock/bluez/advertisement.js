@@ -11,7 +11,7 @@ class Advertisement extends DBusObject {
     this.addInterface(new DBusProperties())
     this.addInterface(new DBusObjectManager())
     this.le = new LEAdvertisement1(props)
-    this.addInterface(le)
+    this.addInterface(this.le)
     this.listener = this.listen.bind(this)
   }
 
