@@ -6,7 +6,7 @@ const State = require('../lib/state')
 const { networkInterface, deviceName } = require('../lib/device')
 const debug = require('debug')('ws:channel')
 const request = require('request')
-const Client = require('../lib/mqttClient/device')
+const Client = require('../lib/mqttClient')
 
 const storageConf = Config.get('storage')
 const IOTConf = Config.get('iot')

@@ -1,4 +1,4 @@
-const TLS = require('../telsa')
+const TLS = require('./tls')
 function buildBuilder(mqttClient, opts) {
   var connection;
 

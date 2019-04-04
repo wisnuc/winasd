@@ -9,7 +9,7 @@ const Device = require('aws-iot-device-sdk').device
 const UUID = require('uuid')
 const Config = require('config')
 
-const Client = require('../lib/mqttClient/device')
+const Client = require('../lib/mqttClient')
 
 const storageConf = Config.get('storage')
 const provisionConf = Config.get('provision')

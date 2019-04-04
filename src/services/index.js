@@ -457,7 +457,7 @@ class AppService {
       winas: this.winas && this.winas.view(),
       provision: this.provision && this.provision.view(),
       channel: this.channel && this.channel.view(),
-      device: Device.hardwareInfo()
+      device: Object.assign(Device.hardwareInfo(), { sn: this.deviceSN })
     }
   }
 
