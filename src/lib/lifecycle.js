@@ -31,7 +31,7 @@ const createSignature = (ecc, op, callback) => {
     } else {
       ecc.sign({ data:raw, der:true }, (err, sig) => {
         if (err) return callback(err)
-        callback(null, sig.toString('hex'))
+        callback(null, { signature: sig.toString('hex'), raw })
       })
     }
   }
