@@ -120,7 +120,7 @@ class Prepare extends BaseState {
     if (Config.system.withoutEcc) {
       fs.readFile(path.join(Config.storage.dirs.certDir, 'deviceSN'), (err, data) => {
         if (err) return callback(err)
-        return callback(null, { sn: data.toString().trim()})
+        return callback(null, { sn: (process.env.NODE_ENV.startsWith('test') ? 'test_' : '') + data.toString().trim()})
       })
     } else {
       this.ctx.ecc.serialNumber({}, (err, sn) => {
