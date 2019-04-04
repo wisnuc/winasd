@@ -1,0 +1,20 @@
+{
+  "pipe": {
+    "baseURL": "https://test.nodetribe.com"
+  },
+  "system": {
+    "globalNode": true,
+    "withoutEcc": false
+  },
+  "storage": {
+    "dirs": {
+      "certDir": "/mnt/persistent/test/certificate",
+      "tmpDir": "/mnt/persistent/test/tmp",
+      "isoDir": "/mnt/persistent/test/iso",
+      "bleDir": "/mnt/persistent/test/ble",
+      "winasDir": "/winas",
+      "bound": "/mnt/persistent/test/bound",
+      "device": "/mnt/persistent/test/device"
+    }
+  }
+}
