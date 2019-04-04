@@ -34,7 +34,8 @@ const createSignature = (ecc, op, callback) => {
   }
 
   if (!fs.existsSync(path.join(storageConf.dirs.device, lifecycle))) { // firstTime
-    refresh(() => {
+    refresh(err => {
+      console.log(err)
       sign()
     })
   } else {

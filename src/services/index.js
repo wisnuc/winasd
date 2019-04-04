@@ -55,9 +55,8 @@ class Prepare extends BaseState {
   }
 
   async initPersistenceAsync() {
-    return
-    await mkdirpAsync(Config.storage.roots.p)
-    await child.execAsync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
+    // await mkdirpAsync(Config.storage.roots.p)
+    // await child.execAsync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
     await rimrafAsync(Config.storage.dirs.tmpDir)
     await mkdirpAsync(Config.storage.dirs.tmpDir)
     await mkdirpAsync(Config.storage.dirs.isoDir)
