@@ -216,7 +216,7 @@ function getCredentials(ini) {
 // creates a secure mqtt connection via TLS, and returns the mqtt
 // connection instance.
 //
-function DeviceClient(options, builder) {
+function DeviceClient(options) {
    //
    // Force instantiation using the 'new' operator; this will cause inherited
    // constructors (e.g. the 'events' class) to be called.
@@ -548,7 +548,7 @@ function DeviceClient(options, builder) {
    //connect and return the client instance to map all mqttjs apis
 
    var protocols = {};
-   protocols.mqtts = builder;
+   protocols.mqtts = require('./builder');
 
    function _loadDefaultFilename() {
       var home = process.env.HOME ||

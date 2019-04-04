@@ -6,7 +6,7 @@ const State = require('../lib/state')
 const { networkInterface, deviceName } = require('../lib/device')
 const debug = require('debug')('ws:channel')
 const request = require('request')
-const CreateClient = require('../lib/mqttClient')
+const Client = require('../lib/mqttClient/device')
 
 const storageConf = Config.get('storage')
 const IOTConf = Config.get('iot')
@@ -125,8 +125,7 @@ class Connecting extends State {
       cb(new Error('ETIMEOUT'))
     }, 10000) // FIXME:
 
-
-    CreateClient({
+    device = new Client({
       clientCertificates: [
         Buffer.from(fs.readFileSync(path.join(certFolder, crtName))
           .toString()
@@ -144,27 +143,30 @@ class Connecting extends State {
         algorithm: '',
         sign: ''
       }
-    }, (err, device) => {
-      if (err) return cb(err)
+    })
+
+    device.on('connect', () => {
       device.subscribe(`cloud/${ this.ctx.sn }/connected`)
       device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ 
         lanIp: networkInterface().address,
         name: deviceName()
       }))
-      device.on('message', (topic, payload) => {
-        if (topic === `cloud/${ this.ctx.sn }/connected`) {
-          let msg
-          try {
-            msg = JSON.parse(payload.toString())
-          } catch(e) {
-            return cb(e)
-          }
-          token = msg.token
-          user = msg.device
-          cb()
-        }
-      })
     })
+    device.on('error', cb)
+    device.on('message', (topic, payload) => {
+      if (topic === `cloud/${ this.ctx.sn }/connected`) {
+        let msg
+        try {
+          msg = JSON.parse(payload.toString())
+        } catch(e) {
+          return cb(e)
+        }
+        token = msg.token
+        user = msg.device
+        cb()
+      }
+    })
+    device.on('offline', () => cb(new Error('offline')))
   }
 
   publish(...args) {}
