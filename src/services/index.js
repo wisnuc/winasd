@@ -206,7 +206,7 @@ class Unbind extends BaseState {
     if (this.bindingFlag) return process.nextTick(() => callback(new Error('allready in binding state')))
     this.bindingFlag = true
     if (!this.ctx.token) return process.nextTick(() => callback(new Error('Winas Net Error')))
-    return reqBind(encrypted, this.ctx.token, (err, data) => {
+    return reqBind(this.ctx.ecc, encrypted, this.ctx.token, (err, data) => {
       if (err) {
         this.bindingFlag = false
         return callback(err)
@@ -308,7 +308,7 @@ class Bound extends BaseState {
     if (this.unbindFlag) return callback(new Error('error state'))
     if (!this.ctx.token) return callback(new Error('network error'))
     this.unbindFlag = true
-    reqUnbind(encrypted, this.ctx.token, (err, data) => {
+    reqUnbind(this.ctx.ecc, encrypted, this.ctx.token, (err, data) => {
       if (err) return callback(err)
       process.nextTick(() => callback(null, null))
       this.setState('Unbinding')
