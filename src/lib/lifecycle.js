@@ -49,7 +49,7 @@ const createSignature = (ecc, op, callback) => {
 module.exports.createSignature = createSignature
 
 module.exports.reqUnbind = (ecc, encrypted, token, callback) => {
-  createSignature('unbind', (err, { signature, raw }) => {
+  createSignature(ecc, 'unbind', (err, { signature, raw }) => {
     if (err) return callback(err)
     request.post(`${ Config.pipe.baseURL }/s/v1/station/unbind`)
       .send({ signature, encrypted, raw })
