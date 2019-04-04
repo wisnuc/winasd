@@ -19,6 +19,7 @@ const Winas = require('./winas')
 const Channel = require('./channel')
 const { reqBind, reqUnbind, verify, refresh } = require('../lib/lifecycle')
 const Device = require('../lib/device')
+const initEcc = require('../lib/atecc')
 
 const ProvisionFile = path.join(Config.storage.roots.p, Config.storage.files.provision)
 
@@ -27,7 +28,8 @@ const EPERSISTENT = NewError('mount persistent partition failed', 'EPERSISTENT')
 const EUSERSTORE = NewError('user store load failed', 'EUSERSTORE')
 const EDEVICE = NewError('device info load failed', 'EDEVICE')
 const EBOUND = NewError('device cloud bound with error signature', 'EBOUND')
-const EUNBIND = NewError('device cloud unbind with error signature', 'EUNBIND')
+const EECCINIT = NewError('ecc init error', 'EECCINIT')
+const EECCPRESET = NewError('ecc preset error', 'EECCPRESET')
 
 class BaseState extends State {
   requestBind(...args) {
@@ -47,24 +49,13 @@ class Prepare extends BaseState {
   enter() {
     // mount and init persistence partition
     this.initPersistenceAsync().then(() => {
-      if (!fs.existsSync(ProvisionFile)) {
-        return this.setState('Provisioning')
-      } else {
-        this.loadUserStore((err, userStore) => {
-          if (err) return this.setState('Failed', EUSERSTORE)
-          this.loadDevice((err, device) => {
-            if (err) return this.setState('Failed', EDEVICE)
-            this.ctx.userStore = userStore
-            this.ctx.deviceInfo = device
-            this.ctx.deviceSN = device.sn
-            this.setState('Starting')
-          })
-        })
-      }
+      Config.system.withoutEcc ? this.startupWithoutEcc()
+        : this.startup()
     }, err => this.setState('Failed', EPERSISTENT))
   }
 
   async initPersistenceAsync() {
+    return
     await mkdirpAsync(Config.storage.roots.p)
     await child.execAsync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
     await rimrafAsync(Config.storage.dirs.tmpDir)
@@ -73,6 +64,38 @@ class Prepare extends BaseState {
     await mkdirpAsync(Config.storage.dirs.certDir)
     await mkdirpAsync(Config.storage.dirs.bound)
     await mkdirpAsync(Config.storage.dirs.device)
+  }
+
+  startupWithoutEcc() {
+    if (!fs.existsSync(ProvisionFile)) {
+      return this.setState('Provisioning')
+    } else {
+      this.loadUserStore((err, userStore) => {
+        if (err) return this.setState('Failed', EUSERSTORE)
+        this.loadDevice((err, device) => {
+          if (err) return this.setState('Failed', EDEVICE)
+          this.ctx.userStore = userStore
+          this.ctx.deviceInfo = device
+          this.ctx.deviceSN = device.sn
+          this.setState('Starting')
+        })
+      })
+    }
+  }
+
+  startup() {
+    initEcc(Config.ecc.bus, (err, ecc) => {
+      if (err) return this.setState('Failed',EECCINIT)
+      ecc.preset(e => {
+        if(e) return this.setState('Failed',EECCPRESET)
+        this.ctx.ecc = ecc
+        this.loadDevice((err, { sn }) => { // provision use sn
+          if (err) return this.setState('Failed', EDEVICE)
+          this.ctx.deviceSN = sn
+          this.startupWithoutEcc()
+        })
+      })
+    })
   }
 
   loadUserStore(callback) {
@@ -94,32 +117,39 @@ class Prepare extends BaseState {
 
   // read SN...
   loadDevice(callback) {
-    fs.readFile(path.join(Config.storage.dirs.certDir, 'deviceSN'), (err, data) => {
-      if (err) return callback(err)
-      return callback(null, { sn: data.toString().trim()})
-    })
+    if (Config.system.withoutEcc) {
+      fs.readFile(path.join(Config.storage.dirs.certDir, 'deviceSN'), (err, data) => {
+        if (err) return callback(err)
+        return callback(null, { sn: data.toString().trim()})
+      })
+    } else {
+      this.ctx.ecc.serialNumber({}, (err, sn) => {
+        if (err) return callback(err)
+        return callback(null, { sn })
+      })
+    }
   }
 }
 
 class Provisioning extends BaseState {
   enter() {
     console.log('run in provision state')
-    this.bled = new Bled(this.ctx)
-    this.bled.on('connect', () => {
-      this.net = new NetworkManager(this.ctx)
-      this.net.on('started', state => {
+    this.ctx.bled = new Bled(this.ctx)
+    this.ctx.bled.on('connect', () => {
+      this.ctx.net = new NetworkManager(this.ctx)
+      this.ctx.net.on('started', state => {
         // if (state !== 70) {
-        this.net.connect('Xiaomi_123', 'wisnuc123456', (err, data) => {
+        this.ctx.net.connect('Xiaomi_123', 'wisnuc123456', (err, data) => {
           console.log('Net Module Connect: ', err, data)
         })
         // }
       })
-      this.net.on('connect', () => {
-        this.provision = new Provision()
-        this.provision.on('Finished', () => {
-          this.provision.removeAllListeners()
-          this.provision.destroy()
-          this.provision = undefined
+      this.ctx.net.once('connect', () => {
+        this.ctx.provision = new Provision(this.ctx)
+        this.ctx.provision.on('Finished', () => {
+          this.ctx.provision.removeAllListeners()
+          this.ctx.provision.destroy()
+          this.ctx.provision = undefined
           console.log('*** Provision finished, need reboot ***')
         })
       })

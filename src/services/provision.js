@@ -9,6 +9,8 @@ const Device = require('aws-iot-device-sdk').device
 const UUID = require('uuid')
 const Config = require('config')
 
+const Client = require('../lib/mqttClient/device')
+
 const storageConf = Config.get('storage')
 const provisionConf = Config.get('provision')
 const iotConf = Config.get('iot')
@@ -78,14 +80,16 @@ class Finished extends State {
 class PreBuild extends State {
 
   enter() {
-    this.createCsr(err => {
+    let F = Config.system.withoutEcc ? this.createCsrWithOpenSSL : this.createCsr
+    F.bind(this)(err => {
       if (err) return this.setState('Failed', err)
       this.setState('Provisioning')
     })
   }
 
-  createCsr(callback) {
-    if (this.ctx.useFake) {
+  // create csr/pkey use software openssl
+  createCsrWithOpenSSL(callback) {
+    if (this.ctx.withoutEcc) {
       fs.lstat(path.join(certFolder, crtName), err => {
         if (err) {
           rimraf(certFolder, err => {
@@ -114,18 +118,42 @@ class PreBuild extends State {
       // TODO: create real CSR use atecc
     }
   }
+
+  // create csr use hardware atecc508/608
+  createCsr(callback) {
+    mkdirp(certFolder, err => {
+      if (err) return callback(err)
+      
+      if (err) return callback(err)
+      this.ctx.ctx.ecc.genCsr({ o: 'wisnuc', cn: 'xxoxxo'}, (err, der) => {
+        if (err) return callback(err)
+        let pem = '-----BEGIN CERTIFICATE REQUEST-----\n'
+              + der.toString('base64') + '\n'
+              + '-----END CERTIFICATE REQUEST-----\n'
+        try {
+          rimraf.sync(path.join(certFolder, csrName))
+          rimraf.sync(path.join(certFolder, caName))
+          fs.writeFileSync(path.join(certFolder, csrName), pem)
+          fs.writeFileSync(path.join(certFolder, caName), awsCA)
+          this.ctx.sn = (process.env.NODE_ENV.startsWith('test') ? 'test_' : '') + this.ctx.ctx.sn // test / release mode switch
+          return callback(null)
+        } catch(e) {
+          return callback(e)
+        }
+      })
+    })
+  }
 }
 
 class Provisioning extends State {
   enter() {
-    // FIXME: 
-    let csrPath = this.ctx.useFake ? path.join(certFolder, csrName) : path.join(certFolder, csrName)
-    let crtPath = this.ctx.useFake ? path.join(certFolder, crtName) : path.join(certFolder, crtName)
+    let csrPath = path.join(certFolder, csrName)
+    let crtPath = path.join(certFolder, crtName)
     this.req = request
       .post(provisionConf.address + '/sign')
       .send({
         csr: fs.readFileSync(csrPath).toString(),
-        type: this.ctx.useFake ? 'test' : 'xxxx',
+        type: process.env.NODE_ENV.startsWith('test') ? 'test' : 'test',
         sn: this.ctx.sn
       })
     this.req
@@ -147,7 +175,6 @@ class Provisioning extends State {
 }
 
 class Saveing extends State {
-
   enter() {
     let p = path.join(storageConf.roots.p, storageConf.files.provision)
     fs.writeFile(p, '1', err => {
@@ -160,9 +187,8 @@ class Saveing extends State {
 
 // TODO: use telsa
 class ConnectTest extends State {
-  
   enter () {
-    this.ctx.useFake ? this.fakeTest(err => {
+    this.ctx.withoutEcc ? this.fakeTest(err => {
       let nextState = err ? 'Failed': 'Saveing'
       this.setState(nextState, err)
     }) : this.realTest(err => {
@@ -197,7 +223,38 @@ class ConnectTest extends State {
 
   // use atecc and telas
   realTest(callback) {
-    
+    let finished = false
+    let cb = (err) => {
+      if (finished) return
+      finished = true
+      this.device.removeAllListeners()
+      this.device.on('error', () => {})
+      setTimeout(() => {
+        this.device.end(true)
+        this.device = undefined
+        callback(err)
+      }, 1000) // fix aws error
+    }
+    this.device = new Client({
+      clientCertificates: [
+        Buffer.from(fs.readFileSync(path.join(certFolder, crtName))
+          .toString()
+          .split('\n')
+          .filter(x => !!x && !x.startsWith('--'))
+          .join(''), 'base64')
+      ],
+      caPath: fs.readFileSync(path.join(certFolder, caName)).toString().replace(/\r\n/g, '\n'),
+      clientId: this.ctx.sn,
+      host: iotConf.endpoint,
+      clientPrivateKey: (data, callback) =>
+        this.ctx.ctx.ecc.sign({ data, der: true }, callback),
+      clientCertificateVerifier: {
+        algorithm: '',
+        sign: ''
+      }
+    })
+    this.device.on('connect', () => cb())
+    this.device.on('error', cb)
   }
 
   exit() {
@@ -211,9 +268,10 @@ class ConnectTest extends State {
 
 class Provision extends require('events'){
 
-  constructor() {
+  constructor(ctx) {
     super()
-    this.useFake = Config.system.useFake
+    this.ctx = ctx
+    this.withoutEcc = Config.system.withoutEcc
     new PreBuild(this)
   }
 

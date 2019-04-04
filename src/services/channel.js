@@ -6,6 +6,7 @@ const State = require('../lib/state')
 const { networkInterface, deviceName } = require('../lib/device')
 const debug = require('debug')('ws:channel')
 const request = require('request')
+const CreateClient = require('../lib/mqttClient')
 
 const storageConf = Config.get('storage')
 const IOTConf = Config.get('iot')
@@ -31,14 +32,14 @@ const formatError = (error, status) => {
 
 class Connecting extends State {
   enter (callback) {
-    let connectFunc = this.ctx.useFake ? this.fakeConnect.bind(this) : this.realConnect.bind(this)
-    connectFunc((err, connection, token, user) => {
+    let cb = (err, connection, token, user) => {
       if (err) {
         callback && callback(err)
         return this.setState('Failed', err)
       }
       this.setState('Connected', connection, token, user)
-    })
+    }
+    this.ctx.withoutEcc ? this.fakeConnect(cb) : this.realConnect(cb)
   }
 
   fakeConnect(callback) {
@@ -99,8 +100,71 @@ class Connecting extends State {
     device.on('offline', () => cb(new Error('offline')))
   }
 
-  realConnect(cb) {
+  realConnect(callback) {
+    let timer, token, user, device, finished = false
+    let cb = (err) => {
+      clearTimeout(timer)
+      if (finished) return
+      finished = true
+      if (device) {
+         device.removeAllListeners()
+         device.on('error', () =>{})
+      }
+      if (err) {
+        device && device.end()
+        device = undefined
+      }
+      callback(err, device, token, user)
+    }
 
+    timer = setTimeout(() => {
+      device.removeAllListeners()
+      device.on('error', () => {})
+      device.end(true)
+      device = undefined
+      cb(new Error('ETIMEOUT'))
+    }, 10000) // FIXME:
+
+
+    CreateClient({
+      clientCertificates: [
+        Buffer.from(fs.readFileSync(path.join(certFolder, crtName))
+          .toString()
+          .split('\n')
+          .filter(x => !!x && !x.startsWith('--'))
+          .join(''), 'base64')
+      ],
+      caPath: fs.readFileSync(path.join(certFolder, caName)).toString().replace(/\r\n/g, '\n'),
+      clientId: this.ctx.sn,
+      host: IOTConf.endpoint,
+      keepalive: 5,
+      clientPrivateKey: (data, callback) =>
+        this.ctx.ctx.ecc.sign({ data, der: true }, callback),
+      clientCertificateVerifier: {
+        algorithm: '',
+        sign: ''
+      }
+    }, (err, device) => {
+      if (err) return cb(err)
+      device.subscribe(`cloud/${ this.ctx.sn }/connected`)
+      device.publish(`device/${ this.ctx.sn }/info`, JSON.stringify({ 
+        lanIp: networkInterface().address,
+        name: deviceName()
+      }))
+      device.on('message', (topic, payload) => {
+        if (topic === `cloud/${ this.ctx.sn }/connected`) {
+          let msg
+          try {
+            msg = JSON.parse(payload.toString())
+          } catch(e) {
+            return cb(e)
+          }
+          token = msg.token
+          user = msg.device
+          cb()
+        }
+      })
+    })
   }
 
   publish(...args) {}
@@ -182,7 +246,7 @@ class Channel extends require('events') {
 
     this.ctx = ctx
 
-    this.useFake = Config.system.useFake
+    this.withoutEcc = Config.system.withoutEcc
 
     this.sn = this.ctx.deviceSN
 
