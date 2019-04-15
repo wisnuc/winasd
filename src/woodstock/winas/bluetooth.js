@@ -27,9 +27,6 @@ class Bluetooth extends DBusObject {
       ManufacturerData: [
         [0xffff, ['ay', [b]]]
       ],
-      ServiceData: [
-        ['9999', ['ay', [0x00, 0x01, 0x02, 0x03, 0x04]]]
-      ],
       IncludeTxPower: true
     })
 
@@ -101,9 +98,6 @@ class Bluetooth extends DBusObject {
       LocalName: 'Wisnuc-' + s,
       ManufacturerData: [
         [0xffff, ['ay', [b]]]
-      ],
-      ServiceData: [
-        ['9999', ['ay', [0x00, 0x01, 0x02, 0x03, 0x04]]]
       ],
       IncludeTxPower: true
     })

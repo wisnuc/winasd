@@ -55,6 +55,7 @@ class Prepare extends BaseState {
   }
 
   async initPersistenceAsync() {
+    // FIXME: check if already mounted
     // await mkdirpAsync(Config.storage.roots.p)
     // await child.execAsync(`mount -U ${Config.storage.uuids.p} ${Config.storage.roots.p}`)
     await rimrafAsync(Config.storage.dirs.tmpDir)

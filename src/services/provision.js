@@ -135,7 +135,7 @@ class PreBuild extends State {
           rimraf.sync(path.join(certFolder, caName))
           fs.writeFileSync(path.join(certFolder, csrName), pem)
           fs.writeFileSync(path.join(certFolder, caName), awsCA)
-          this.ctx.sn = (process.env.NODE_ENV.startsWith('test') ? 'test_' : '') + this.ctx.ctx.sn // test / release mode switch
+          this.ctx.sn = (process.env.NODE_ENV.startsWith('test') ? 'test_' : '') + this.ctx.ctx.deviceSN // test / release mode switch
           return callback(null)
         } catch(e) {
           return callback(e)

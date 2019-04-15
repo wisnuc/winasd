@@ -375,7 +375,7 @@ class Connecting extends State {
   exit () {
     if (this.socket) {
       this.socket.removeAllListeners('error')
-      this.on('error', () => {})
+      this.socket.on('error', () => {})
       this.socket.end()
       delete this.socket
     }
