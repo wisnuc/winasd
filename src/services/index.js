@@ -383,7 +383,9 @@ class AppService {
 
     this.winas.sendMessage({
       type: 'device',
-      data: this.deviceSN
+      data: {
+        deviceSN: this.deviceSN
+      }
     })
   }
 
