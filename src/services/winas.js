@@ -78,6 +78,7 @@ class Starting extends State {
       env: Object.assign({}, process.env, { 
         PATH: `/wisnuc/node/base/bin:${process.env.PATH}`,
         NODE_ENV: process.env.WINAS_ENV ? process.env.WINAS_ENV : 'winas',
+        NODE_CONFIG_ENV: process.env.WINAS_ENV ? process.env.WINAS_ENV : 'winas',
         NODE_CONFIG_DIR: '/winas/build/config/'
       }),
       stdio: ['ignore', 'inherit', 'inherit', 'ipc'] 
@@ -296,7 +297,8 @@ class Winas extends EventEmitter {
   view () {
     return {
       state: this.getState(),
-      isBeta: this.isBeta()
+      isBeta: this.isBeta(),
+      users: this.users
     }
   }
 
