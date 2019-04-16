@@ -121,7 +121,7 @@ class BLED extends require('events') {
   handleNetworkSetting(type, packet) {
     if (packet.action === 'addAndActive') {
       if (this.ctx.localAuth.verify(packet.token)) {
-        this.nm.connect(packet.body.ssid, packet.body.pwd, (err, data) => {
+        this.nm.connect2(packet.body.ssid, packet.body.pwd, (err, data) => {
           if (err) return this.update(type, { seq: packet.seq, error: err })
           return this.update(type, {seq: packet.seq, data})
         })

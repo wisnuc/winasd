@@ -46,10 +46,10 @@
     }
   },
   "provision": {
-    "address": "http://10.10.9.148:8080"
+    "address": "http://10.10.9.134:8080"
   },
   "ecc": {
-    "bus": 3
+    "bus": 0
   },
   "system": {
     "globalNode": true,

@@ -327,6 +327,7 @@ class Bound extends BaseState {
 class Failed extends BaseState {
   enter(reason) {
     this.reason = reason
+    console.log(reason)
   }
 }
 
