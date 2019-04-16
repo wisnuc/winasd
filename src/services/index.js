@@ -248,14 +248,14 @@ class Binding extends BaseState {
   async cleanVolumeAsync() {
     // FIXME: where is the data device
     try {
-      await child.execAsync('umount /dev/sda2')
+      await child.execAsync('umount /dev/sda')
     } catch (e){
       if (!e.message || !e.message.includes('not mounted')){ 
         throw e
       }
     }
     // FIXME:
-    await child.execAsync(`mkfs.btrfs -f /dev/sda2`)
+    await child.execAsync(`mkfs.btrfs -f /dev/sda`)
 
     await child.execAsync('partprobe')
   }

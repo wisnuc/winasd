@@ -100,7 +100,7 @@ class NetworkManager extends DBusObject {
             new UINT32(70)
           ]
         })
-    
+        
         this.addSignalHandle('/org/freedesktop/NetworkManager', (m) => {
           if (m.member === 'DeviceAdded' || m.member === 'DeviceRemoved') {
             return this.emit('NM_DeviceChanged')
@@ -231,7 +231,7 @@ class NetworkManager extends DBusObject {
       destination: 'org.freedesktop.NetworkManager',
       path: '/org/freedesktop/NetworkManager',
       'interface': 'org.freedesktop.NetworkManager',
-      member: 'ActiveConnection',
+      member: 'ActivateConnection',
       signature: 'ooo',
       body: [
         new OBJECT_PATH(connObjPath),
@@ -480,6 +480,44 @@ class NetworkManager extends DBusObject {
               }
             }
             this.addSignalHandle(setting, handleFunc)
+          })
+        } else {
+          return callback(Object.assign(new Error('wifi not found'), { code: 'ENOINT' }))
+        }
+      })
+    })
+  }
+
+  connect2 (ssid, pwd, callback) {
+    this.getWirelessDevices((err, devices) => {
+      if (err || !devices.length) return callback(Object.assign(err, { code: 'ENODEVICE' }))
+      this.getAccessPointsDetails(devices[0], (err, data) => {
+        if (err) return callback(err)
+        let wa = data.find(x => x.Ssid === ssid)
+        if (wa) {
+          this.setting.AddConnection(wa.Ssid, pwd, (err, data) => {
+            if(err) return callback(Object.assign(err, { code: 'ECONN'}))
+            let setting = data[0].value
+            this.ActivateConnection(setting, devices[0], wa.objectPath, (err, data) => {
+              if(err) return callback(Object.assign(err, { code: 'ECONN'}))
+              let activeConn = data[0].value
+              let count = 0
+              let findAddr = (cb) => {
+                setTimeout(() => {
+                  this.ActiveConnections((err, data) => {
+                    if (err) return cb(err)
+                    if (!data.find(x => x === activeConn)) return cb(Object.assign(new Error('connect failed', { code: 'ECONN' })))
+                    this.ActiveConnectionAddressData(activeConn, cb)
+                  })
+                }, 2000)
+              }
+              let h = (err, data) => {
+                if (err && ++count < 10) return findAddr(h)
+                if(err) return callback(Object.assign(err, { code: 'ECONN'}))
+                callback(null, data)
+              }
+              findAddr(h)
+            })
           })
         } else {
           return callback(Object.assign(new Error('wifi not found'), { code: 'ENOINT' }))
