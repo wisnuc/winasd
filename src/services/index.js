@@ -380,6 +380,11 @@ class AppService {
       type: 'boundUser',
       data: this.userStore.data
     })
+
+    this.winas.sendMessage({
+      type: 'device',
+      data: this.deviceSN
+    })
   }
 
   /**
