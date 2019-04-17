@@ -22,7 +22,7 @@ class Advertisement extends DBusObject {
   }
 
   register () {
-    console.log('register advertisement')
+    // console.log('register advertisement')
 
     this.dbus.driver.invoke({
       destination: 'org.bluez',

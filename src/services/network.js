@@ -1,3 +1,4 @@
+const debug = require('debug')('ws:net')
 /*
   NetworkManager State
   NM_STATE_UNKNOWN = 0 
@@ -43,11 +44,11 @@ class NetWorkManager extends require('events') {
   }
 
   handleConnectionChanaged() {
-    console.log('handleConnectionChanaged')
+    debug('handleConnectionChanaged')
   }
 
   handleStateChanged(state) {
-    console.log('handleStateChanged', state)
+    debug('handleStateChanged', state)
     this.state = state
     if (state === 70) this.emit('connect')
     // FIXME: race

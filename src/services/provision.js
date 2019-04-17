@@ -267,6 +267,11 @@ class ConnectTest extends State {
   }
 }
 
+/**
+ * Provision 模块负责 出厂前的设备注册
+ * 使用ecc生成的csr(证书签名请求)通过访问provision-proxy 注册到wisnuc 云服务
+ * 并换取证书文件，并尝试连接一次AWS IoT
+ */
 class Provision extends require('events'){
 
   constructor(ctx) {

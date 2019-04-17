@@ -106,7 +106,7 @@ class NetworkManager extends DBusObject {
             return this.emit('NM_DeviceChanged')
           }
           if (m.member === 'StateChanged') {
-            console.log('NM_StateChanged', m.body[0].value)
+            // console.log('NM_StateChanged', m.body[0].value)
             return this.emit('NM_StateChanged', m.body[0].value)
           }
         })

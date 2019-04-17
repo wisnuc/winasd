@@ -2,8 +2,12 @@ const Bluetooth = require('../woodstock/winas/bluetooth')
 const DBus = require('../woodstock/lib/dbus')
 const NetWorkManager = require('../woodstock/nm/NetworkManager')
 const { STRING } = require('../woodstock/lib/dbus-types')
+const debug = require('debug')('bled')
 
 /**
+ * BLED 负责初始化 debus对象
+ * 由于ble和networkmanager 都使用debus提供服务，使用服务
+ * 所以该模块负责初始化ble中的各种service以及NetworkManager对象
  * definition bluetooth packet
  * 
  * {
@@ -32,6 +36,7 @@ class BLED extends require('events') {
   }
 
   initProperties() {
+    debug('initProperties')
     if (!this.ble) return setTimeout(() => this.initProperties(), 1000)
     this.ble.dbus.driver.invoke({
       destination: 'org.bluez',
@@ -45,7 +50,7 @@ class BLED extends require('events') {
     }, (err, data) => {
       if (err) return setTimeout(() => this.initProperties(), 1000)
       this.info = data[0].eval().reduce((o, [name, kv]) => Object.assign(o, { [name]: kv[1] }), {})
-      console.log(this.info)
+      debug.log(this.info)
     })
   }
 
@@ -53,6 +58,7 @@ class BLED extends require('events') {
     this.ble && this.ble.updateAdv(this.ctx.userStore && this.ctx.userStore.data || false, this.ctx.deviceSN)
   }
 
+  // ble 对象设置前如果上一个存在 先移除所有listeners, 然后在新的设置对象上挂载监听
   set ble(x) {
     if (this._ble) {
       this._ble.removeAllListeners()
@@ -69,6 +75,7 @@ class BLED extends require('events') {
 
   get ble() { return this._ble }
 
+  // 同设置ble对象一样
   set nm(x) {
     if (this._nm) this._nm.removeAllListeners()
     this._nm = x
@@ -83,6 +90,11 @@ class BLED extends require('events') {
     return this._nm
   }
 
+  // 处理来自某个ble service 的消息
+  // service1 => localAuth service
+  // service2 => network setting
+  // service3 => cloud
+  // NICChar1/NICChar2 => network interface service characteristics
   handleBleMessage(type, data) {
     let packet
     try {
@@ -96,7 +108,7 @@ class BLED extends require('events') {
     if (type === 'Service3Write') return this.handleCloud(type, packet)
     if (type === 'NICChar1Write') return this.handleNICChar1Write(type, packet)
     if (type === 'NICChar2Write') return this.handleNICChar2Write(type, packet)
-    console.log('invalid action: ', packet.action)
+    debug('invalid action: ', packet.action)
   }
 
 
@@ -175,7 +187,7 @@ class BLED extends require('events') {
 
   update(type, data) {
     if (this.ble) {
-      console.log(this.ble[type.slice(0, type.length - 5)+ 'Update'], data)
+      debug(this.ble[type.slice(0, type.length - 5)+ 'Update'], data)
       data = Buffer.from(JSON.stringify(data))
       
       this.ble[type.slice(0, type.length - 5) + 'Update'](data)

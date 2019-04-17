@@ -3,6 +3,9 @@ const crypto = require('crypto')
 const KEYS = 'abcdefg12345678'.split('')
 const RandomKey = () => KEYS.map(x => KEYS[Math.round(Math.random()*14)]).join('')
 
+/**
+ * 物理验证
+ */
 class LocalAuth {
   constructor(ctx) {
     this.ctx = ctx

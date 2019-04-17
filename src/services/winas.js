@@ -188,6 +188,7 @@ class Failed extends State {
   }
 }
 
+// 负责整个 winas 生命周期
 class Winas extends EventEmitter {
 
   /**

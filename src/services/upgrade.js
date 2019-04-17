@@ -8,6 +8,11 @@ const debug = require('debug')('ws:upgrade')
 const upgradeConf = Config.get('upgrade')
 const isHighVersion = (current, next) => current < next
 
+/**
+ * fetch + download
+ * 检查S3是否有新版本、解析新版本metadata
+ * 然后下载新版本
+ */
 class Upgrade extends event {
 
   constructor (ctx, tmpDir, dir) {
