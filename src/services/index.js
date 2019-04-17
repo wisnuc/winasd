@@ -20,6 +20,7 @@ const Channel = require('./channel')
 const { reqBind, reqUnbind, verify, refresh } = require('../lib/lifecycle')
 const Device = require('../lib/device')
 const initEcc = require('../lib/atecc')
+const LED = require('../lib/led')
 
 const ProvisionFile = path.join(Config.storage.roots.p, Config.storage.files.provision)
 
@@ -77,6 +78,7 @@ class Prepare extends BaseState {
           this.ctx.userStore = userStore
           this.ctx.deviceInfo = device
           this.ctx.deviceSN = device.sn
+          this.ctx.ledService = this.setupLED()
           this.setState('Starting')
         })
       })
@@ -128,6 +130,17 @@ class Prepare extends BaseState {
         return callback(null, { sn: (process.env.NODE_ENV.startsWith('test') ? 'test_' : '') + sn })
       })
     }
+  }
+
+  // init led service with i2c busNum and i2c addr
+  setupLED() {
+    let ledService = new LED(Config.led.bus, Config.led.addr)
+    try {
+      ledService.init()
+    } catch(e) {
+      debug('led service init error: ', e)
+    }
+    return ledService
   }
 }
 
@@ -465,7 +478,8 @@ class AppService {
       winas: this.winas && this.winas.view(),
       provision: this.provision && this.provision.view(),
       channel: this.channel && this.channel.view(),
-      device: Object.assign(Device.hardwareInfo(), { sn: this.deviceSN })
+      device: Object.assign(Device.hardwareInfo(), { sn: this.deviceSN }),
+      led: this.ledService && this.ledService.view()
     }
   }
 

@@ -51,6 +51,10 @@
   "ecc": {
     "bus": 0
   },
+  "led": {
+    "bus": 1,
+    "addr": 100
+  },
   "system": {
     "globalNode": true,
     "withoutEcc": false
