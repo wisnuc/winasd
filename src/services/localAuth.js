@@ -62,7 +62,7 @@ class LocalAuth {
       return callback(Object.assign(new Error('error state'), { code: 'ESTATE'}))
     clearTimeout(this.timer)
     // check data maybe led colors
-    if (!data.color || deepEqual(data.color, this.args)) 
+    if (!data.color || !deepEqual(data.color, this.args)) 
       return callback(Object.assign(new Error('color error'), { code: 'ECOLOR'}))
     // create token
     let cipher = crypto.createCipher('aes128', this.secret)
