@@ -50,7 +50,7 @@ class BLED extends require('events') {
     }, (err, data) => {
       if (err) return setTimeout(() => this.initProperties(), 1000)
       this.info = data[0].eval().reduce((o, [name, kv]) => Object.assign(o, { [name]: kv[1] }), {})
-      debug.log(this.info)
+      debug(this.info)
     })
   }
 
