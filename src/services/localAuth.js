@@ -34,23 +34,26 @@ class LocalAuth {
   request(callback) {
     if (this.state === 'Idle') {
       let args = CreateArgs()
-      this.ctx.ledService.runAsync(args[0], args[1], 60 * 1000) // start led
-        .then(() => {
-          this.args = args
-          this.state = 'Working'
-          this.timer = setTimeout(() => this.stop(), 60 * 1000)
-          callback(null, { colors: COLORS})
-        })
-        .catch(e => callback(Object.assign(new Error('led service error'), { code: 'ELED'})))
+      try {
+        this.ctx.ledService.run(args[0], args[1], 60 * 1000) // start led
+        this.args = args
+        this.state = 'Working'
+        this.timer = setTimeout(() => this.stop(), 60 * 1000)
+        process.nextTick(() => callback(null, { colors: COLORS}))
+      } catch(e) {
+        process.nextTick(() => callback(Object.assign(e, { code: 'ELED'})))
+      }
     } else {
-      callback(Object.assign(new Error('busy'), { code: 'EBUSY'}))
+      process.nextTick(() => callback(Object.assign(new Error('busy'), { code: 'EBUSY'})))
     }
   }
 
   stop() {
     if (this.state === 'Idle') return
     clearTimeout(this.timer)
-    this.ctx.ledService.stopAsync().catch(() => {}) //stop led
+    try{
+      this.ctx.ledService.stop() //stop led, may throw error
+    } catch(e) {console.log('stop led error: ', e)}
     this.state = 'Idle'
   }
 

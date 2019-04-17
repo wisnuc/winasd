@@ -211,17 +211,9 @@ class LEDControl {
     this.state.setState(Working, color, type, time, times)
   }
 
-  async runAsync(...args) {
-    this.run(...args)
-  }
-
   stop() {
     if (this.state.constructor.name === 'Err') throw new Error('Init failed')
     this.state.setState(StandBy)
-  }
-
-  async stopAsync(...args) {
-    this.stop(...args)
   }
 
   view() {
