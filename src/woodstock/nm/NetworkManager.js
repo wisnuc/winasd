@@ -482,7 +482,7 @@ class NetworkManager extends DBusObject {
             this.addSignalHandle(setting, handleFunc)
           })
         } else {
-          return callback(Object.assign(new Error('wifi not found'), { code: 'ENOINT' }))
+          return callback(Object.assign(new Error('wifi not found'), { code: 'ENOENT' }))
         }
       })
     })
@@ -520,7 +520,7 @@ class NetworkManager extends DBusObject {
             })
           })
         } else {
-          return callback(Object.assign(new Error('wifi not found'), { code: 'ENOINT' }))
+          return callback(Object.assign(new Error('wifi not found'), { code: 'ENOENT' }))
         }
       })
     })

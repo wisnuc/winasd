@@ -83,7 +83,7 @@ class Prepare extends BaseState {
           this.ctx.userStore = userStore
           this.ctx.deviceInfo = device
           this.ctx.deviceSN = device.sn
-          this.ctx.ledService = this.setupLED()
+          this.ctx.ledService = new LED(Config.led.bus, Config.led.addr) // start led service
           this.setState('Starting')
         })
       })
@@ -135,17 +135,6 @@ class Prepare extends BaseState {
         return callback(null, { sn: (process.env.NODE_ENV.startsWith('test') ? 'test_' : '') + sn })
       })
     }
-  }
-
-  // init led service with i2c busNum and i2c addr
-  setupLED() {
-    let ledService = new LED(Config.led.bus, Config.led.addr)
-    try {
-      ledService.init()
-    } catch(e) {
-      debug('led service init error: ', e)
-    }
-    return ledService
   }
 }
 

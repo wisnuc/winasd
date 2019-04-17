@@ -18,14 +18,22 @@ class State {
 
 class Init extends State {
   enter(BUS_NUMBER) {
-    this.ctx.i2c1 = i2c.openSync(BUS_NUMBER)
-    this.ctx.set(0x00, 0x55) // reboot
-    this.ctx.set(0x01, 0x01) // reboot
-    this.ctx.set(0x03, 0x00) // max brightness
-    this.ctx.set(0x07, 0x07) // enable all 
-    this.ctx.set(0x08, 0x08) // require in multi color mode
-    this.ctx.setPWMS(0x55, 0x55, 0x55)
-    this.setState(StandBy)
+    let i2c1 = i2c.open(BUS_NUMBER, err => {
+      if (err) return this.setState(Err, err)
+      this.ctx.i2c1 = i2c1
+      this.initLed()
+        .then(() => this.setState(StandBy))
+        .catch(e => this.setState(Err, e))
+    })
+  }
+
+  async initLed() {
+    await this.ctx.setAsync(0x00, 0x55) // reboot
+    await this.ctx.setAsync(0x01, 0x01) // reboot
+    await this.ctx.setAsync(0x03, 0x00) // max brightness
+    await this.ctx.setAsync(0x07, 0x07) // enable all 
+    await this.ctx.setAsync(0x08, 0x08) // require in multi color mode
+    await this.ctx.setPWMSAsync(0x55, 0x55, 0x55)
   }
 }
 
@@ -99,20 +107,20 @@ class LEDControl {
     this.busNumber = BUS_NUMBER
     this.addr = AW2015FCR_ADDR
     this.defaultColor = defaultColor
-  }
-
-  init() {
-    try {
-      new Init(this, this.busNumber)
-    } catch (error) { 
-      this.state.setState(Err, error)
-      throw error
-    }
+    new Init(this, this.busNumber)
   }
 
   set(cmd, byte) {
     if (!this.i2c1) throw new Error('Not initialized yet')
     this.i2c1.writeByteSync(this.addr, cmd, byte)
+  }
+
+  async setAsync(cmd, byte) {
+    if (!this.i2c1) throw new Error('Not initialized yet')
+    return new Promise((resolve, reject) => {
+      this.i2c1.writeByte(this.addr, cmd, byte, 
+        err => err ? reject(err) : resolve())
+    })
   }
 
   get(cmd, num) {
@@ -158,6 +166,12 @@ class LEDControl {
     this.set(0x1D, l2 || 0x00)
     this.set(0x1E, l3 || 0x00)
   }
+
+  async setPWMSAsync (l1, l2, l3) {
+    await this.setAsync(0x1C, l1 || 0x00)
+    await this.setAsync(0x1D, l2 || 0x00)
+    await this.setAsync(0x1E, l3 || 0x00)
+  }
   
   setTRiseAndOn(v1, v2, v3) {
     this.set(0x30, v1 || 0x00)
@@ -190,14 +204,24 @@ class LEDControl {
   }
 
   run(color, type, time, times) {
+    if (this.state.constructor.name === 'Err') throw new Error('Init failed')
     if (!['alwaysOn', 'breath'].includes(type)) throw new Error('illegal type')
     if (time && typeof time !== 'number') throw new Error('illegal time')
     if (times && typeof times !== 'number') throw new Error('illegal times')
     this.state.setState(Working, color, type, time, times)
   }
 
+  async runAsync(...args) {
+    this.run(...args)
+  }
+
   stop() {
+    if (this.state.constructor.name === 'Err') throw new Error('Init failed')
     this.state.setState(StandBy)
+  }
+
+  async stopAsync(...args) {
+    this.stop(...args)
   }
 
   view() {
@@ -220,101 +244,5 @@ function convertColor(color) {
 function parseHex(number) {
   return parseInt(number, 16)
 }
-
-// let m = new LEDControl(3, 0x64)
-// try {
-//   m.init()
-// } catch (error) {
-//   console.log('catch error', error)
-// }
-
-
-// 常亮
-// m.run('#ffffff', 'alwaysOn')
-// 闪烁 5秒
-// m.run('#ffffff', 'breath', 5000)
-// 闪烁 3次
-// m.run('#0000ff', 'breath', null, 3)
-
-
-/* class StandBy extends State {
-  constructor(ctx) {
-    super(ctx)
-  }
-  enter() {
-    this.ctx.set(0x01, 0x00)
-  }
-}
-class Working extends State {
-  constructor(ctx, ...args) {
-    super(ctx, ...args)
-  }
-  enter(color, type, time = 0, times = 0, weight = 0) {
-    this.color = color
-    this.type = type
-    this.time = time
-    this.finish = false
-    this.closeTimer = null
-    this.finishTimer = null
-    let [r, g, b] = convertColor(color)
-    
-    this.ctx.set(0x01, 0x01) // enter active
-    this.ctx.setLed1(r, g, b) // set color
-    if (type == 'alwaysOn') {
-      // manual mode
-      this.ctx.setLedMode(0x00)
-    } else if (type == 'blink' || type == 'breath') {
-      // pattern mode
-      this.ctx.setLedMode(0x01)
-      // speed config
-      this.ctx.setTRiseAndOn(0x33)
-      this.ctx.setTFallAndOff(0x33)
-      this.ctx.setTSlotAndDelay(0x33)
-      this.ctx.setPattern(0x00)
-      this.ctx.setTimes(0x00)
-      // pattern config
-      if (times) {
-        console.log(`limit times ${times}`)
-        this.ctx.setPattern(parseInt(`10000000`, 2))
-        this.ctx.setTimes(times)
-        // pulling 0x02 
-        this.finishTimer = setInterval(() => {
-          if (this.ctx.get(0x02) == '0x0') {
-            console.log(`in finish timer`)
-            this.finish = true
-            this.clear()
-          }
-        }, 500)
-      }
-      // active time
-      if (time) {
-        console.log(`limit time ${time}`)
-        this.closeTimer = setTimeout(() => {
-          console.log(`in close timer`)
-          this.setState(StandBy)
-        }, time * 1000)
-      }
-      
-      this.ctx.set(0x09, 0x01)
-    }
-  }
-  clear() {
-    clearTimeout(this.closeTimer)
-    clearInterval(this.finishTimer)
-  }
-  exit() {
-    this.clear()
-    this.ctx.setLedMode(0x01)
-    this.ctx.stop()
-    
-  }
-  isFinish() {
-    this.ctx.get(0x02)
-    this.ctx.get(0x04)
-    this.ctx.get(0x05)
-    this.ctx.get(0x06)
-  }
-}
-*/
 
 module.exports = LEDControl

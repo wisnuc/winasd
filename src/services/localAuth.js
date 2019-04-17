@@ -1,7 +1,14 @@
 const crypto = require('crypto')
 
+const deepEqual = require('fast-deep-equal')
+
 const KEYS = 'abcdefg12345678'.split('')
 const RandomKey = () => KEYS.map(x => KEYS[Math.round(Math.random()*14)]).join('')
+
+const COLORS = [
+  ['#ff0000', 'alwaysOn'], ['#00ff00', 'alwaysOn'], ['#0000ff', 'alwaysOn'],
+  ['#ff0000', 'breath'], ['#00ff00', 'breath'], ['#0000ff', 'breath']]
+const CreateArgs = () => COLORS[Math.floor(Math.random() * 6)]
 
 /**
  * 物理验证
@@ -18,6 +25,7 @@ class LocalAuth {
       },
       set(v) {
         console.log('Local Auth Change State :  ', this._state, '  ->  ', v)
+        if (v === 'Idle') this.args = undefined 
         this._state = v
       }
     })
@@ -25,21 +33,34 @@ class LocalAuth {
 
   request(callback) {
     if (this.state === 'Idle') {
-      this.state = 'Working'
-      this.timer = setTimeout(() => {
-        this.state = 'Idle'
-      }, 60 * 1000)
-      callback(null, { colors: ['120', '203', '123', '102']})
+      let args = CreateArgs()
+      this.ctx.ledService.runAsync(args[0], args[1], 60 * 1000) // start led
+        .then(() => {
+          this.args = args
+          this.state = 'Working'
+          this.timer = setTimeout(() => this.stop(), 60 * 1000)
+          callback(null, { colors: COLORS})
+        })
+        .catch(e => callback(Object.assign(new Error('led service error'), { code: 'ELED'})))
     } else {
       callback(Object.assign(new Error('busy'), { code: 'EBUSY'}))
     }
   }
 
+  stop() {
+    if (this.state === 'Idle') return
+    clearTimeout(this.timer)
+    this.ctx.ledService.stopAsync().catch(() => {}) //stop led
+    this.state = 'Idle'
+  }
+
   auth(data, callback) {
-    if (this.state !== 'Working') return callback(Object.assign(new Error('error state'), { code: 'ESTATE'}))
+    if (this.state !== 'Working')
+      return callback(Object.assign(new Error('error state'), { code: 'ESTATE'}))
     clearTimeout(this.timer)
     // check data maybe led colors
-
+    if (!data.color || deepEqual(data.color, this.args)) 
+      return callback(Object.assign(new Error('color error'), { code: 'ECOLOR'}))
     // create token
     let cipher = crypto.createCipher('aes128', this.secret)
     let token = cipher.update(JSON.stringify({
@@ -47,9 +68,9 @@ class LocalAuth {
       ctime: new Date().getTime()
     }), 'utf8', 'hex')
     token += cipher.final('hex')
-    // return
-    callback(null, { token })
-    this.state = 'Idle'
+    this.stop()
+
+    process.nextTick(() => callback(null, { token }))
   }
 
   verify(token) {
