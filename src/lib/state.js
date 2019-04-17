@@ -20,7 +20,7 @@ class State {
   }
 
   _enter (...args) {
-    debug(`${this.ctx.constructor.name} enter ${this.constructor.name} state`)
+    this.debug(`${this.ctx.constructor.name} enter ${this.constructor.name} state`)
     this.enter(...args)
   }
 
@@ -30,7 +30,11 @@ class State {
 
   _exit () {
     this.exit()
-    debug(`${this.ctx.constructor.name} exit ${this.constructor.name} state`)
+    this.debug(`${this.ctx.constructor.name} exit ${this.constructor.name} state`)
+  }
+
+  debug(...args) {
+    debug(...args)
   }
 
   exit() {

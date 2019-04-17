@@ -5,13 +5,13 @@ function buildBuilder(mqttClient, opts) {
   connection = new TLS(opts);
 
   function handleTLSerrors(err) {
-     console.log('telsa emit error: ', err)
+     console.log('telsa emit error: ', err.message)
      mqttClient.emit('error', err);
      connection.end();
   }
 
   connection.on('connect', function() {
-     console.log('telsa connected!')
+   //   console.log('telsa connected!')
   });
 
   connection.on('error', handleTLSerrors);

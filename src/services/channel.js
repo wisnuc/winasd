@@ -30,7 +30,13 @@ const formatError = (error, status) => {
   return formatError
 }
 
-class Connecting extends State {
+class Base extends State {
+  debug(...args) {
+    debug(...args)
+  }
+}
+
+class Connecting extends Base {
   enter (callback) {
     let cb = (err, connection, token, user) => {
       if (err) {
@@ -176,7 +182,7 @@ class Connecting extends State {
   connect() {}
 }
 
-class Connected extends State {
+class Connected extends Base {
   enter (connection, token, device) {
     this.ctx.ctx.token = token
     this.user = device.owner ? {
@@ -222,7 +228,7 @@ class Connected extends State {
   }
 }
 
-class Failed extends State {
+class Failed extends Base {
   enter(error) {
     // console.log('Failed: ', error)
     this.error = error
@@ -242,6 +248,9 @@ class Failed extends State {
   subscribe() {}
 }
 
+/***
+ * Channel class 
+ */
 class Channel extends require('events') {
   constructor(ctx) {
     super()
@@ -364,7 +373,6 @@ class Channel extends require('events') {
     this.state.destroy()
   }
 }
-
 
 Channel.prototype.Connecting = Connecting
 Channel.prototype.Connected = Connected

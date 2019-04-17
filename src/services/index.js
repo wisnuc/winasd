@@ -6,6 +6,7 @@ const path = require('path')
 const fs = require('fs')
 const child = Promise.promisifyAll(require('child_process'))
 const debug = require('debug')('ws:app')
+const debug2 = require('debug')('ws:appService')
 
 const DataStore = require('../lib/DataStore')
 const State = require('../lib/state')
@@ -43,6 +44,10 @@ class BaseState extends State {
     if (args.length) {
       args.pop()(new Error('error state'))
     }
+  }
+
+  debug(...args) {
+    debug2(...args)
   }
 }
 

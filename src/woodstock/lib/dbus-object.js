@@ -101,7 +101,7 @@ class DBusObject extends EventEmitter {
 
   // this is an event handler
   mounted () {
-    console.log(this.objectPath() + ' mounted')
+    //console.log(this.objectPath() + ' mounted')
   } 
 }
 

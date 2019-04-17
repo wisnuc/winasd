@@ -309,7 +309,7 @@ class State {
     let qs = []
 
     if (this instanceof State) {
-      console.log('- exiting ' + this.constructor.name)
+      //console.log('- exiting ' + this.constructor.name)
       for (p = Object.getPrototypeOf(this);
         !(NextState.prototype instanceof p.constructor);
         p.hasOwnProperty('exit') && p.exit.apply(this),
