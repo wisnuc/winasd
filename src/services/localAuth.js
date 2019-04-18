@@ -12,6 +12,8 @@ const CreateArgs = () => COLORS[Math.floor(Math.random() * 6)]
 
 /**
  * 物理验证
+ * 通过灯光闪烁或者物理按键等方式对操作用户鉴权
+ * 确认用户确实持有设备
  */
 class LocalAuth {
   constructor(ctx) {
@@ -41,6 +43,7 @@ class LocalAuth {
         this.timer = setTimeout(() => this.stop(), 60 * 1000)
         process.nextTick(() => callback(null, { colors: COLORS}))
       } catch(e) {
+        this.stop()
         process.nextTick(() => callback(Object.assign(e, { code: 'ELED'})))
       }
     } else {
@@ -60,7 +63,6 @@ class LocalAuth {
   auth(data, callback) {
     if (this.state !== 'Working')
       return callback(Object.assign(new Error('error state'), { code: 'ESTATE'}))
-    clearTimeout(this.timer)
     // check data maybe led colors
     if (!data.color || !deepEqual(data.color, this.args)) 
       return callback(Object.assign(new Error('color error'), { code: 'ECOLOR'}))
