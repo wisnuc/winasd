@@ -2,7 +2,7 @@ const Bluetooth = require('../woodstock/winas/bluetooth')
 const DBus = require('../woodstock/lib/dbus')
 const NetWorkManager = require('../woodstock/nm/NetworkManager')
 const { STRING } = require('../woodstock/lib/dbus-types')
-const debug = require('debug')('bled')
+const debug = require('debug')('ws:bled')
 
 /**
  * BLED 负责初始化 debus对象
