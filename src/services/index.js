@@ -181,7 +181,7 @@ class Starting extends BaseState {
         process.nextTick(() => this.ctx.channel && this.ctx.channel.connect())
       })
     })
-    this.bled.on('BLE_DEVICE_DISCONNECTED', () => this.localAuth && this.localAuth.stop()) // stop localAuth
+    this.ctx.bled.on('BLE_DEVICE_DISCONNECTED', () => this.ctx.localAuth && this.ctx.localAuth.stop()) // stop localAuth
     if (this.ctx.userStore.data) {
       this.setState('Bound')
     } else {
