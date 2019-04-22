@@ -5,6 +5,7 @@ class State {
     this.ctx = ctx
     this.ctx.state = this
     this.enter(...args)
+    process.nextTick(() => this.ctx.emit('StateEntered', this.constructor.name))
   }
 
   setState(NextState, ...args) {
@@ -96,11 +97,12 @@ class Working extends State {
 
 class Err extends State {
   enter(err) {
+    this.error = err
     this.message = err.message
   }
 }
 
-class LEDControl {
+class LEDControl extends require('events') {
   constructor(BUS_NUMBER, AW2015FCR_ADDR, defaultColor) {
     this.i2c1 = null
     this.state = null
@@ -204,6 +206,7 @@ class LEDControl {
   }
 
   run(color, type, time, times) {
+    if (this.getName() === 'Init') throw new Error('Not initialized yet')
     if (this.state.constructor.name === 'Err') throw new Error('Init failed')
     if (!['alwaysOn', 'breath'].includes(type)) throw new Error('illegal type')
     if (time && typeof time !== 'number') throw new Error('illegal time')
