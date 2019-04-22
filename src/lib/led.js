@@ -104,6 +104,7 @@ class Err extends State {
 
 class LEDControl extends require('events') {
   constructor(BUS_NUMBER, AW2015FCR_ADDR, defaultColor) {
+    super()
     this.i2c1 = null
     this.state = null
     this.busNumber = BUS_NUMBER
