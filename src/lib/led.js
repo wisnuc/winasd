@@ -5,6 +5,7 @@ class State {
     this.ctx = ctx
     this.ctx.state = this
     this.enter(...args)
+    process.nextTick(() => this.ctx.emit('StateEntered', this.constructor.name))
   }
 
   setState(NextState, ...args) {
@@ -101,8 +102,9 @@ class Err extends State {
   }
 }
 
-class LEDControl {
+class LEDControl extends require('events') {
   constructor(BUS_NUMBER, AW2015FCR_ADDR, defaultColor) {
+    super()
     this.i2c1 = null
     this.state = null
     this.busNumber = BUS_NUMBER

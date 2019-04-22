@@ -90,7 +90,6 @@ class Prepare extends BaseState {
           this.ctx.userStore = userStore  // bound user info
           this.ctx.deviceInfo = device
           this.ctx.deviceSN = device.sn // deviceSN
-          this.ctx.ledService = new LED(Config.led.bus, Config.led.addr) // start led service
           this.setState('Starting')
         })
       })
@@ -107,9 +106,26 @@ class Prepare extends BaseState {
         this.loadDevice((err, { sn }) => { // provision need
           if (err) return this.setState('Failed', EDEVICE)
           this.ctx.deviceSN = sn
-          this.startupWithoutEcc()
+          this.initLedService((err, ledService) => { // ignore led start failed
+            if (err) console.log('LED Service Start Error')
+            this.ctx.ledService = ledService
+            this.startupWithoutEcc()
+          })
         })
       })
+    })
+  }
+
+  initLedService(callback) {
+    let ledService = new LED(Config.led.bus, Config.led.addr) // start led service
+    ledService.on('StateEntered', state => {
+      if (state === 'Err') {
+        ledService.removeAllListeners()
+        return callback(ledService.state.error)
+      } else if (state === 'StandBy') {
+        ledService.removeAllListeners()
+        return callback(null, ledService)
+      }
     })
   }
 
@@ -404,7 +420,7 @@ class AppService {
 
     // properties
     this.deviceSN = undefined
-    
+
     Object.defineProperty(this, 'winas', {
       get() {
         return this._winas
