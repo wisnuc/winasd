@@ -51,6 +51,12 @@ class BaseState extends State {
   }
 }
 
+/**
+ * check all necessary constraints in this winasd.
+ * make work dirs
+ * start ecc service and led service
+ * load bound user if exist
+ */
 class Prepare extends BaseState {
   enter() {
     // mount and init persistence partition
@@ -72,6 +78,7 @@ class Prepare extends BaseState {
     await mkdirpAsync(Config.storage.dirs.device)
   }
 
+  // skip init ecc
   startupWithoutEcc() {
     if (!fs.existsSync(ProvisionFile)) {
       return this.setState('Provisioning')
@@ -80,9 +87,9 @@ class Prepare extends BaseState {
         if (err) return this.setState('Failed', EUSERSTORE)
         this.loadDevice((err, device) => {
           if (err) return this.setState('Failed', EDEVICE)
-          this.ctx.userStore = userStore
+          this.ctx.userStore = userStore  // bound user info
           this.ctx.deviceInfo = device
-          this.ctx.deviceSN = device.sn
+          this.ctx.deviceSN = device.sn // deviceSN
           this.ctx.ledService = new LED(Config.led.bus, Config.led.addr) // start led service
           this.setState('Starting')
         })
@@ -90,13 +97,14 @@ class Prepare extends BaseState {
     }
   }
 
+  // init ecc first
   startup() {
     initEcc(Config.ecc.bus, (err, ecc) => {
       if (err) return this.setState('Failed',EECCINIT)
       ecc.preset(e => {
         if(e) return this.setState('Failed',EECCPRESET)
         this.ctx.ecc = ecc
-        this.loadDevice((err, { sn }) => { // provision use sn
+        this.loadDevice((err, { sn }) => { // provision need
           if (err) return this.setState('Failed', EDEVICE)
           this.ctx.deviceSN = sn
           this.startupWithoutEcc()
@@ -190,9 +198,21 @@ class Starting extends BaseState {
   }
 }
 
+/**
+ * start channel service, on ***ChannelConnected*** event
+ * 
+ * if cloud return someone bound this device, that means unbound state error.
+ * 
+ * maybe bound job had not finished. verify the signature, do bind if verifyed
+ */
 class Unbind extends BaseState {
   enter() {
     this.ctx.channel = new Channel(this.ctx)
+    try{
+      this.ctx.ledService.run('#0000ff', 'breath')
+    } catch(e) {
+      console.log('LedService RUN error: ', e)
+    }
     this.ctx.channel.once('ChannelConnected', (device, user) => {
       if (user){ // mismatch
         console.log('****** cloud device bind state mismatch, check signature *****')
@@ -210,6 +230,7 @@ class Unbind extends BaseState {
     })
   }
 
+  // request to cloud, save userinfo if success
   requestBind(encrypted, callback) {
     if (this.bindingFlag) return process.nextTick(() => callback(new Error('allready in binding state')))
     this.bindingFlag = true
@@ -235,6 +256,14 @@ class Unbind extends BaseState {
   }
 }
 
+/**
+ * clean built-in volume device
+ * ```bash
+ *  umount -f /dev/xxx
+ *  mkfs.btrfs -f /dev/xxx
+ *  partprobe
+ * ```
+ */
 class Binding extends BaseState {
   enter(user, callback = () => {}) {
     this.start(user)
@@ -256,7 +285,7 @@ class Binding extends BaseState {
   async cleanVolumeAsync() {
     // FIXME: where is the data device
     try {
-      await child.execAsync('umount /dev/sda')
+      await child.execAsync('umount -f /dev/sda')
     } catch (e){
       if (!e.message || !e.message.includes('not mounted')){ 
         throw e
@@ -286,8 +315,20 @@ class Unbinding extends BaseState {
   }
 }
 
+/**
+ * start channel service, on ***ChannelConnected*** event
+ * 
+ * if cloud has no user bound this device, that means bound state error.
+ * 
+ * maybe unbound job had not finished. verify the signature, do unbound if verifyed
+ */
 class Bound extends BaseState {
   enter() {
+    try{
+      this.ctx.ledService.run('#00ff00', 'alwaysOn')
+    } catch(e) {
+      console.log('LedService RUN error: ', e)
+    }
     this.ctx.channel = new Channel(this.ctx)
     this.ctx.channel.on('ChannelConnected', (device, user) => {
       if (!user) {
@@ -336,10 +377,18 @@ class Failed extends BaseState {
   enter(reason) {
     this.reason = reason
     console.log(reason)
+    try{
+      this.ctx.ledService.run('#ff0000', 'breath')
+    } catch(e) {
+      console.log('LedService RUN error: ', e)
+    }
   }
 }
 
-
+/**
+ * Winasd`s root service
+ * control all sub services
+ */
 class AppService {
   constructor() {
     this.config = Config
@@ -374,6 +423,19 @@ class AppService {
       }
     })
 
+    // services
+    this.userStore = undefined // user store
+    this.ledService = undefined // led control
+    this.ecc = undefined // ecc service
+    this.bled = undefined // bled service
+    this.net = undefined // networkManager service
+    this.channel = undefined // channel service
+    this.winas = undefined // winas lifecycle service
+
+    // properties
+    this.deviceSN = undefined
+
+    // initialize　all service and properties
     new Prepare(this)
   }
 
@@ -474,7 +536,11 @@ class AppService {
       provision: this.provision && this.provision.view(),
       channel: this.channel && this.channel.view(),
       device: Object.assign(Device.hardwareInfo(), { sn: this.deviceSN }),
-      led: this.ledService && this.ledService.view()
+      led: this.ledService && this.ledService.view(),
+      winasd: {
+        state: this.state.constructor.name,
+        reason: this.state.reason // only exist in Failed state
+      }
     }
   }
 
