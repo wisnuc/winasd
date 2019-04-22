@@ -90,6 +90,7 @@ class Prepare extends BaseState {
           this.ctx.userStore = userStore  // bound user info
           this.ctx.deviceInfo = device
           this.ctx.deviceSN = device.sn // deviceSN
+          this.ctx.ledService = new LED(Config.led.bus, Config.led.addr) // start led service
           this.setState('Starting')
         })
       })
@@ -106,24 +107,9 @@ class Prepare extends BaseState {
         this.loadDevice((err, { sn }) => { // provision need
           if (err) return this.setState('Failed', EDEVICE)
           this.ctx.deviceSN = sn
-          this.initLedService((err, ledService) => { // ignore led start failed
-            if (err) console.log('LED Service Start Error')
-            this.ctx.ledService = ledService
-            this.startupWithoutEcc()
-          })
+          this.startupWithoutEcc()
         })
       })
-    })
-  }
-
-  initLedService(callback) {
-    let ledService = new LED(Config.led.bus, Config.led.addr) // start led service
-    ledService.on('StateEntered', state => {
-      if (state === 'Err') {
-        return callback(ledService.state.error)
-      } else if (state === 'StandBy') {
-        return callback(null, ledService)
-      }
     })
   }
 
@@ -408,6 +394,17 @@ class AppService {
     this.config = Config
     this.upgrade = new Upgrade(this, Config.storage.dirs.tmpDir, Config.storage.dirs.isoDir)
 
+    // services
+    this.userStore = undefined // user store
+    this.ledService = undefined // led control
+    this.ecc = undefined // ecc service
+    this.bled = undefined // bled service
+    this.net = undefined // networkManager service
+    this.channel = undefined // channel service
+
+    // properties
+    this.deviceSN = undefined
+    
     Object.defineProperty(this, 'winas', {
       get() {
         return this._winas
@@ -436,18 +433,6 @@ class AppService {
         })
       }
     })
-
-    // services
-    this.userStore = undefined // user store
-    this.ledService = undefined // led control
-    this.ecc = undefined // ecc service
-    this.bled = undefined // bled service
-    this.net = undefined // networkManager service
-    this.channel = undefined // channel service
-    this.winas = undefined // winas lifecycle service
-
-    // properties
-    this.deviceSN = undefined
 
     // initialize　all service and properties
     new Prepare(this)
