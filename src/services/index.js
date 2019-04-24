@@ -348,6 +348,9 @@ class Bound extends BaseState {
     this.ctx.channel = new Channel(this.ctx)
     this.ctx.channel.on('ChannelConnected', (device, user) => {
       if (!user) {
+        // save user to user store
+        this.ctx.userStore.save(user, console.log) // ignore error
+        
         console.log('****** cloud device Bound state mismatch, check signature *****')
         verify(device.info && device.info.signature, (err, verifyed) => {
           if (err || !verifyed) {
